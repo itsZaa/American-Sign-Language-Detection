@@ -25,7 +25,7 @@ class SignUp : AppCompatActivity() {
 
         val textView = findViewById<TextView>(R.id.textView7)
 
-        val text = "Don’t have accounts? Register Now!"
+        val text = "Already have accounts? Sign in"
         val spannableString = SpannableString(text)
 
         val clickableSpan = object : ClickableSpan() {
