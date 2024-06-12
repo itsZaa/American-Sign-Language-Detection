@@ -13,6 +13,9 @@
         android:theme="@style/Theme.TubesRPLL"
         tools:targetApi="31">
         <activity
+            android:name=".Profile"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity2"
             android:exported="false" />
         <activity

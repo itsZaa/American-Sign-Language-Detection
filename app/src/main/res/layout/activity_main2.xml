@@ -92,4 +92,21 @@
         app:layout_constraintTop_toBottomOf="@+id/button2"
         app:layout_constraintWidth_percent="0.35" />
 
+    <ImageButton
+        android:id="@+id/imageButton5"
+        android:layout_width="67dp"
+        android:layout_height="79dp"
+        android:layout_marginStart="101dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="29dp"
+        android:layout_marginBottom="30dp"
+        android:onClick="pindah"
+        app:layout_constraintBottom_toTopOf="@+id/button2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.647"
+        app:layout_constraintStart_toEndOf="@+id/textView"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        tools:srcCompat="@tools:sample/avatars" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
