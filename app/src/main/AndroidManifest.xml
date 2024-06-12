@@ -13,7 +13,7 @@
         android:theme="@style/Theme.TubesRPLL"
         tools:targetApi="31">
         <activity
-            android:name=".Profile"
+            android:name=".`Sign in`"
             android:exported="false" />
         <activity
             android:name=".MainActivity2"

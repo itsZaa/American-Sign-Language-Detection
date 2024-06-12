@@ -22,7 +22,7 @@ class MainActivity2 : AppCompatActivity() {
     }
 
     fun pindah(view: View) {
-        val intent = Intent(this, Profile::class.java)
+        val intent = Intent(this, SignIn::class.java)
         startActivity(intent)
     }
 }

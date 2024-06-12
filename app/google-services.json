@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "389895854488",
+    "project_id": "rpll-d5682",
+    "storage_bucket": "rpll-d5682.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:389895854488:android:bc694fe9fbf7129643b3ed",
+        "android_client_info": {
+          "package_name": "com.example.tubesrpll"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJ-uceBCkPUlrr9I5aauGgJETUuRXMjvI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
