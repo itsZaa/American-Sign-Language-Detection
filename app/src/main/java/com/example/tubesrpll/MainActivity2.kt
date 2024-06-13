@@ -25,7 +25,7 @@ class MainActivity2 : AppCompatActivity() {
     }
 
     fun pindahKeTextToVideo(view: View) {
-        val intent = Intent(this, SignIn::class.java)
+        val intent = Intent(this, TranslateVideoToText::class.java)
         startActivity(intent)
     }
 }
