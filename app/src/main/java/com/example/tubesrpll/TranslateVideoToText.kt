@@ -1,29 +1,24 @@
 package com.example.tubesrpll
 
+import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.SurfaceTexture
+import android.hardware.camera2.*
+import android.hardware.camera2.params.OutputConfiguration
+import android.hardware.camera2.params.SessionConfiguration
+import android.os.Build
 import android.os.Bundle
+import android.view.Surface
+import android.view.TextureView
+import android.view.View
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.NonNull
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import android.Manifest
-import android.view.View
-import android.view.TextureView
-import android.hardware.camera2.CameraCaptureSession
-import android.hardware.camera2.CameraDevice
-import android.hardware.camera2.CameraManager
-import android.hardware.camera2.CaptureRequest
-import android.content.Context
-import android.hardware.camera2.CameraAccessException
-import android.hardware.camera2.params.OutputConfiguration
-import android.hardware.camera2.params.SessionConfiguration
-import android.os.Build
-import androidx.annotation.RequiresApi
-import android.graphics.SurfaceTexture
-import android.hardware.camera2.*
-import android.view.Surface
-import androidx.annotation.NonNull
 
 class TranslateVideoToText : AppCompatActivity() {
 
@@ -34,6 +29,7 @@ class TranslateVideoToText : AppCompatActivity() {
     private lateinit var cameraManager: CameraManager
     private var myCameraDevice: CameraDevice? = null
     private lateinit var captureRequestBuilder: CaptureRequest.Builder
+    private var isFrontCamera: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +68,16 @@ class TranslateVideoToText : AppCompatActivity() {
 
     private fun startCamera() {
         try {
-            stringCameraID = cameraManager.cameraIdList[1]
+            stringCameraID = if (isFrontCamera) {
+                cameraManager.cameraIdList.first { id ->
+                    cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
+                }
+            } else {
+                cameraManager.cameraIdList.first { id ->
+                    cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK
+                }
+            }
+
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 return
             }
@@ -122,5 +127,12 @@ class TranslateVideoToText : AppCompatActivity() {
         } catch (e: CameraAccessException) {
             throw RuntimeException(e)
         }
+    }
+
+    fun switchCamera(view: View) {
+        isFrontCamera = !isFrontCamera
+        myCameraCaptureSession?.close()
+        myCameraDevice?.close()
+        startCamera()
     }
 }
