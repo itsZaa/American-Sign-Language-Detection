@@ -62,7 +62,7 @@ class SignIn : AppCompatActivity() {
             }
         }
 
-        spannableString.setSpan(clickableSpan, 10, 18, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        spannableString.setSpan(clickableSpan, 21, 34, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         textView.text = spannableString
         textView.movementMethod = android.text.method.LinkMovementMethod.getInstance()
     }
