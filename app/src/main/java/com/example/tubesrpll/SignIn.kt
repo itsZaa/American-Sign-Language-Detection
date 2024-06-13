@@ -12,6 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 
 class SignIn : AppCompatActivity() {
 
@@ -38,9 +39,15 @@ class SignIn : AppCompatActivity() {
 
                 firebaseAuth.signInWithEmailAndPassword(email, pass).addOnCompleteListener {
                     if (it.isSuccessful) {
-                        Toast.makeText(this, "Login berhasil", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(this, MainActivity2::class.java)
-                        startActivity(intent)
+                        val user = firebaseAuth.currentUser
+                        if (user != null && user.isEmailVerified) {
+                            Toast.makeText(this, "Login berhasil", Toast.LENGTH_SHORT).show()
+                            val intent = Intent(this, MainActivity2::class.java)
+                            startActivity(intent)
+                        } else {
+                            Toast.makeText(this, "Email belum diverifikasi. Silakan periksa email Anda.", Toast.LENGTH_LONG).show()
+                            sendEmailVerification(user)
+                        }
                     } else {
                         Toast.makeText(this, "Password/email salah", Toast.LENGTH_SHORT).show()
                     }
@@ -65,5 +72,15 @@ class SignIn : AppCompatActivity() {
         spannableString.setSpan(clickableSpan, 21, 34, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         textView.text = spannableString
         textView.movementMethod = android.text.method.LinkMovementMethod.getInstance()
+    }
+
+    private fun sendEmailVerification(user: FirebaseUser?) {
+        user?.sendEmailVerification()?.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Toast.makeText(this, "Email verifikasi telah dikirim. Silakan periksa email Anda.", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this, "Gagal mengirim email verifikasi.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }
