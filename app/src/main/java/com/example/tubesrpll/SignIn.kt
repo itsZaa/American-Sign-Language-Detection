@@ -12,7 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 
 class SignIn : AppCompatActivity() {
 
@@ -20,6 +20,7 @@ class SignIn : AppCompatActivity() {
     private lateinit var passEt: EditText
     private lateinit var signInButton: Button
     private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var firestore: FirebaseFirestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,23 +31,30 @@ class SignIn : AppCompatActivity() {
         signInButton = findViewById(R.id.button6)
 
         firebaseAuth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
 
         signInButton.setOnClickListener {
             val email = emailEt.text.toString()
             val pass = passEt.text.toString()
 
             if (email.isNotEmpty() && pass.isNotEmpty()) {
-
                 firebaseAuth.signInWithEmailAndPassword(email, pass).addOnCompleteListener {
                     if (it.isSuccessful) {
                         val user = firebaseAuth.currentUser
-                        if (user != null && user.isEmailVerified) {
-                            Toast.makeText(this, "Login berhasil", Toast.LENGTH_SHORT).show()
-                            val intent = Intent(this, MainActivity2::class.java)
-                            startActivity(intent)
-                        } else {
-                            Toast.makeText(this, "Email belum diverifikasi. Silakan periksa email Anda.", Toast.LENGTH_LONG).show()
-                            sendEmailVerification(user)
+                        user?.let {
+                            val userId = it.uid
+                            firestore.collection("users").document(userId).get()
+                                .addOnSuccessListener { document ->
+                                    if (document != null) {
+                                        val name = document.getString("name")
+                                        Toast.makeText(this, "Login berhasil", Toast.LENGTH_SHORT).show()
+                                        val intent = Intent(this, MainActivity2::class.java)
+                                        intent.putExtra("USER_NAME", name)
+                                        startActivity(intent)
+                                    } else {
+                                        Toast.makeText(this, "Data user tidak ditemukan", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                         }
                     } else {
                         Toast.makeText(this, "Password/email salah", Toast.LENGTH_SHORT).show()
@@ -72,15 +80,5 @@ class SignIn : AppCompatActivity() {
         spannableString.setSpan(clickableSpan, 21, 34, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         textView.text = spannableString
         textView.movementMethod = android.text.method.LinkMovementMethod.getInstance()
-    }
-
-    private fun sendEmailVerification(user: FirebaseUser?) {
-        user?.sendEmailVerification()?.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Toast.makeText(this, "Email verifikasi telah dikirim. Silakan periksa email Anda.", Toast.LENGTH_LONG).show()
-            } else {
-                Toast.makeText(this, "Gagal mengirim email verifikasi.", Toast.LENGTH_SHORT).show()
-            }
-        }
     }
 }
