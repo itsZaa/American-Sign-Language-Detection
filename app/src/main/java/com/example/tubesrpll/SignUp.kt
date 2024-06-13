@@ -23,7 +23,7 @@ class SignUp : AppCompatActivity() {
             insets
         }
 
-        val textView = findViewById<TextView>(R.id.textView7)
+        val textView = findViewById<TextView>(R.id.signin)
 
         val text = "Already have accounts? Sign in"
         val spannableString = SpannableString(text)
