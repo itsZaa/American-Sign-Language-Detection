@@ -42,19 +42,23 @@ class SignIn : AppCompatActivity() {
                     if (it.isSuccessful) {
                         val user = firebaseAuth.currentUser
                         user?.let {
-                            val userId = it.uid
-                            firestore.collection("users").document(userId).get()
-                                .addOnSuccessListener { document ->
-                                    if (document != null) {
-                                        val name = document.getString("name")
-                                        Toast.makeText(this, "Login berhasil", Toast.LENGTH_SHORT).show()
-                                        val intent = Intent(this, Home::class.java)
-                                        intent.putExtra("USER_NAME", name)
-                                        startActivity(intent)
-                                    } else {
-                                        Toast.makeText(this, "Data user tidak ditemukan", Toast.LENGTH_SHORT).show()
+                            if (it.isEmailVerified) {
+                                val userId = it.uid
+                                firestore.collection("users").document(userId).get()
+                                    .addOnSuccessListener { document ->
+                                        if (document != null) {
+                                            val name = document.getString("name")
+                                            Toast.makeText(this, "Login berhasil", Toast.LENGTH_SHORT).show()
+                                            val intent = Intent(this, Home::class.java)
+                                            intent.putExtra("USER_NAME", name)
+                                            startActivity(intent)
+                                        } else {
+                                            Toast.makeText(this, "Data user tidak ditemukan", Toast.LENGTH_SHORT).show()
+                                        }
                                     }
-                                }
+                            } else {
+                                Toast.makeText(this, "Email belum diverifikasi. Silakan cek email Anda untuk verifikasi.", Toast.LENGTH_LONG).show()
+                            }
                         }
                     } else {
                         Toast.makeText(this, "Password/email salah", Toast.LENGTH_SHORT).show()
