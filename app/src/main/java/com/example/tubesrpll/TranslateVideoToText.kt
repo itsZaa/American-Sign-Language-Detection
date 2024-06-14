@@ -66,29 +66,8 @@ class TranslateVideoToText : AppCompatActivity() {
         }
     }
 
-    private fun startCamera() {
-        try {
-            stringCameraID = if (isFrontCamera) {
-                cameraManager.cameraIdList.first { id ->
-                    cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
-                }
-            } else {
-                cameraManager.cameraIdList.first { id ->
-                    cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK
-                }
-            }
-
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                return
-            }
-            cameraManager.openCamera(stringCameraID, stateCallback, null)
-        } catch (e: CameraAccessException) {
-            throw RuntimeException(e)
-        }
-    }
-
     @RequiresApi(Build.VERSION_CODES.P)
-    fun buttonStartCamera(view: View) {
+    fun startCameraSession(view: View) {
         val surfaceTexture: SurfaceTexture? = textureView.surfaceTexture
         val surface = Surface(surfaceTexture)
         try {
@@ -121,7 +100,28 @@ class TranslateVideoToText : AppCompatActivity() {
         }
     }
 
-    fun buttonStopCamera(view: View) {
+    private fun startCamera() {
+        try {
+            stringCameraID = if (isFrontCamera) {
+                cameraManager.cameraIdList.first { id ->
+                    cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
+                }
+            } else {
+                cameraManager.cameraIdList.first { id ->
+                    cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK
+                }
+            }
+
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                return
+            }
+            cameraManager.openCamera(stringCameraID, stateCallback, null)
+        } catch (e: CameraAccessException) {
+            throw RuntimeException(e)
+        }
+    }
+
+    fun stopCamera(view: View) {
         try {
             myCameraCaptureSession?.abortCaptures()
         } catch (e: CameraAccessException) {
@@ -129,7 +129,8 @@ class TranslateVideoToText : AppCompatActivity() {
         }
     }
 
-    fun switchCamera(view: View) {
+
+    fun switchCamera(view: View){
         isFrontCamera = !isFrontCamera
         myCameraCaptureSession?.close()
         myCameraDevice?.close()

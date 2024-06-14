@@ -14,15 +14,19 @@ class Home : AppCompatActivity() {
         setContentView(R.layout.activity_home)
         val textView2 = findViewById<TextView>(R.id.textView)
         val userName = intent.getStringExtra("USER_NAME")
-        textView2.text = "Welcome $userName"
+        if (userName != null){
+            textView2.text = "Welcome $userName"
+        } else {
+            textView2.text = "Welcome Guest"
+        }
     }
 
-    fun pindah(view: View) {
+    fun moveToSignIn(view: View) {
         val intent = Intent(this, SignIn::class.java)
         startActivity(intent)
     }
 
-    fun pindahKeTextToVideo(view: View) {
+    fun moveToTextToVideo(view: View) {
         val intent = Intent(this, TranslateVideoToText::class.java)
         startActivity(intent)
     }

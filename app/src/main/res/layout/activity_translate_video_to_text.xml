@@ -32,7 +32,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="204dp"
         android:layout_marginTop="16dp"
-        android:onClick="buttonStopCamera"
+        android:onClick="stopCamera"
         android:text="Stop Camera"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textureView" />
@@ -43,7 +43,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="48dp"
         android:layout_marginTop="16dp"
-        android:onClick="buttonStartCamera"
+        android:onClick= "startCameraSession"
         android:text="Start Camera"
         app:layout_constraintEnd_toStartOf="@+id/button7"
         app:layout_constraintHorizontal_bias="0.75"
