@@ -114,4 +114,82 @@
         app:strokeColor="#808080"
         app:strokeWidth="5dp" />
 
+    <TextView
+        android:id="@+id/textNews"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="30dp"
+        android:fontFamily="sans-serif"
+        android:text="News"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button3" />
+
+    <Button
+        android:id="@+id/newsContent"
+        android:layout_width="316dp"
+        android:layout_height="168dp"
+        android:layout_marginTop="20dp"
+        android:backgroundTint="#AEACAC"
+        app:cornerRadius="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textNews" />
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="157dp"
+        android:layout_height="74dp"
+        tools:layout_editor_absoluteX="203dp"
+        tools:layout_editor_absoluteY="535dp"
+        tools:srcCompat="@tools:sample/avatars" />
+
+    <TextView
+        android:id="@+id/textHeadline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="150dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="150dp"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/newsContent"
+        app:layout_constraintStart_toStartOf="@+id/newsContent"
+        app:layout_constraintTop_toTopOf="@+id/newsContent" />
+
+    <TextView
+        android:id="@+id/textContent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textHeadline" />
+
+    <TextView
+        android:id="@+id/textTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="37dp"
+        android:layout_marginTop="35dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textContent" />
+
+    <TextView
+        android:id="@+id/textViewAllNews"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="20dp"
+        android:fontFamily="sans-serif"
+        android:text="View All News"
+        android:textSize="16sp"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:autoLink="all"
+        android:linksClickable="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button4" />
+
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
