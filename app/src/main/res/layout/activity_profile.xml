@@ -12,18 +12,16 @@
         android:id="@+id/imagePhoto"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="70dp"
         android:background="@color/black"
-        app:shapeAppearanceOverlay="@style/circular"
-        app:strokeWidth="8dp"
-        app:strokeColor="#808080"
         android:padding="5dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearanceOverlay="@style/circular"
         app:srcCompat="@drawable/baseline_person_24"
-        tools:layout_editor_absoluteX="137dp"
-        tools:layout_editor_absoluteY="113dp" />
+        app:strokeColor="#808080"
+        app:strokeWidth="8dp" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/cameraButton"
@@ -40,4 +38,62 @@
         app:srcCompat="@drawable/baseline_photo_camera_24"
         android:contentDescription="TODO"
         android:focusable="true"/>
+
+    <TextView
+        android:id="@+id/emailProfile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/NameProfile" />
+
+    <TextView
+        android:id="@+id/phoneProfile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:text="| "
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/NameProfile" />
+
+    <Button
+        android:id="@+id/buttonEdit"
+        android:layout_width="152dp"
+        android:layout_height="67dp"
+        android:layout_marginTop="70dp"
+        android:backgroundTint="#AED9DA"
+        android:text="Edit Profile"
+        android:textColor="@color/black"
+        app:cornerRadius="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/emailProfile" />
+
+    <Button
+        android:id="@+id/buttonLogout"
+        android:layout_width="152dp"
+        android:layout_height="67dp"
+        android:layout_marginTop="30dp"
+        android:backgroundTint="#000080"
+        android:text="Logout"
+        app:cornerRadius="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonEdit" />
+
+    <TextView
+        android:id="@+id/NameProfile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imagePhoto" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
