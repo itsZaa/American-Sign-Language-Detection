@@ -52,8 +52,10 @@ class TranslateVideoToText : AppCompatActivity() {
     }
 
     private val stateCallback = object : CameraDevice.StateCallback() {
+        @RequiresApi(Build.VERSION_CODES.P)
         override fun onOpened(cameraDevice: CameraDevice) {
             myCameraDevice = cameraDevice
+            startCameraSession()
         }
 
         override fun onDisconnected(cameraDevice: CameraDevice) {
@@ -67,7 +69,7 @@ class TranslateVideoToText : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
-    fun startCameraSession(view: View) {
+    private fun startCameraSession() {
         val surfaceTexture: SurfaceTexture? = textureView.surfaceTexture
         val surface = Surface(surfaceTexture)
         try {
@@ -121,19 +123,23 @@ class TranslateVideoToText : AppCompatActivity() {
         }
     }
 
-    fun stopCamera(view: View) {
+    fun switchCamera(view: View) {
+        isFrontCamera = !isFrontCamera
+        myCameraCaptureSession?.close()
+        myCameraDevice?.close()
+        startCamera()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopCamera()
+    }
+
+    private fun stopCamera() {
         try {
             myCameraCaptureSession?.abortCaptures()
         } catch (e: CameraAccessException) {
             throw RuntimeException(e)
         }
-    }
-
-
-    fun switchCamera(view: View){
-        isFrontCamera = !isFrontCamera
-        myCameraCaptureSession?.close()
-        myCameraDevice?.close()
-        startCamera()
     }
 }
