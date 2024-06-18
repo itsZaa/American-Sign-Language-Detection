@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
+import android.text.TextPaint
+import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.UnderlineSpan
 import android.util.Log
@@ -23,11 +25,9 @@ import java.util.Locale
 class Home : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
-    private lateinit var mainImageView: ImageView
     private lateinit var mainTextHeadline: TextView
     private lateinit var mainTextContent: TextView
     private lateinit var mainTextTime: TextView
-    private lateinit var textViewAllNews: TextView
     private lateinit var mainNewsContainer: View
 
     private var mainNewsId: String? = null
@@ -66,7 +66,7 @@ class Home : AppCompatActivity() {
         textViewAllNews.text = spannableString
         textViewAllNews.movementMethod = android.text.method.LinkMovementMethod.getInstance()
 
-        mainImageView = findViewById(R.id.imageView2)
+//        mainImageView = findViewById(R.id.imageView2)
         mainTextHeadline = findViewById(R.id.textHeadline)
         mainTextContent = findViewById(R.id.textContent)
         mainTextTime = findViewById(R.id.textTime)
@@ -77,14 +77,6 @@ class Home : AppCompatActivity() {
         textViewAllNews.setOnClickListener {
             val intent = Intent(this, AllNews::class.java)
             startActivity(intent)
-        }
-
-        mainNewsContainer.setOnClickListener {
-            mainNewsId?.let {
-                val intent = Intent(this, NewsDetail::class.java)
-                intent.putExtra("newsId", it)
-                startActivity(intent)
-            }
         }
     }
 
@@ -137,7 +129,25 @@ class Home : AppCompatActivity() {
                     val sentences = content.split("(?<=\\.)\\s".toRegex())
                     val excerpt = sentences.take(1).joinToString(" ")
 
-                    mainTextContent.text = excerpt
+                    val spannableContent = SpannableString("$excerpt... selengkapnya")
+                    val clickableSpan = object : ClickableSpan() {
+                        override fun onClick(widget: View) {
+                            val intent = Intent(widget.context, NewsDetail::class.java)
+                            intent.putExtra("documentId", mainNewsId)
+                            widget.context.startActivity(intent)
+                        }
+
+                        override fun updateDrawState(ds: TextPaint) {
+                            super.updateDrawState(ds)
+                            ds.isUnderlineText = true
+                        }
+                    }
+                    val startIndex = spannableContent.length - "selengkapnya".length
+                    val endIndex = spannableContent.length
+                    spannableContent.setSpan(clickableSpan, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+                    mainTextContent.text = spannableContent
+                    mainTextContent.movementMethod = LinkMovementMethod.getInstance()
 
                     val formattedDate = timestamp?.let {
                         SimpleDateFormat("dd MMMM yyyy", Locale.ENGLISH).format(it)
