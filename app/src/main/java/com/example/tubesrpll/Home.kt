@@ -7,18 +7,17 @@ import android.text.Spanned
 import android.text.TextPaint
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
-import android.text.style.UnderlineSpan
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import com.squareup.picasso.Picasso
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -29,21 +28,19 @@ class Home : AppCompatActivity() {
     private lateinit var mainTextContent: TextView
     private lateinit var mainTextTime: TextView
     private lateinit var mainNewsContainer: View
+    private lateinit var profileImageView: ImageView
+    private lateinit var textView2: TextView
 
     private var mainNewsId: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_home)
         auth = FirebaseAuth.getInstance()
 
-        val textView2 = findViewById<TextView>(R.id.textView)
-        val userName = intent.getStringExtra("USER_NAME")
-        if (userName != null) {
-            textView2.text = "Welcome $userName"
-        } else {
-            textView2.text = "Welcome Guest"
-        }
+        textView2 = findViewById(R.id.textView)
+        profileImageView = findViewById(R.id.imageProfile) // Ensure you have this ImageView in your layout
 
         val textViewAllNews = findViewById<TextView>(R.id.textViewAllNews)
 
@@ -55,60 +52,75 @@ class Home : AppCompatActivity() {
                 val intent = Intent(this@Home, SignUp::class.java)
                 startActivity(intent)
             }
+
+            override fun updateDrawState(ds: TextPaint) {
+                super.updateDrawState(ds)
+                ds.isUnderlineText = true
+            }
         }
 
         spannableString.setSpan(
             clickableSpan,
             0,
-            textViewAllNews.length(),
+            text.length,
             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         )
         textViewAllNews.text = spannableString
-        textViewAllNews.movementMethod = android.text.method.LinkMovementMethod.getInstance()
+        textViewAllNews.movementMethod = LinkMovementMethod.getInstance()
 
-//        mainImageView = findViewById(R.id.imageView2)
         mainTextHeadline = findViewById(R.id.textHeadline)
         mainTextContent = findViewById(R.id.textContent)
         mainTextTime = findViewById(R.id.textTime)
         mainNewsContainer = findViewById(R.id.newsContent)
 
         getMainNews()
+        fetchProfileImage()
 
         textViewAllNews.setOnClickListener {
             val intent = Intent(this, AllNews::class.java)
             startActivity(intent)
         }
+
+        profileImageView.setOnClickListener { moveToSignIn(it) }
     }
 
-    fun moveToSignIn(view: View) {
-        val userName = intent.getStringExtra("USER_NAME")
-        if (userName == null) {
-            val intent = Intent(this, SignIn::class.java)
-            startActivity(intent)
-        } else {
-            val intent = Intent(this, Profile::class.java)
-            startActivity(intent)
-        }
+    override fun onResume() {
+        super.onResume()
+        fetchProfileImage()
     }
 
-    fun moveToTextToVideo(view: View) {
-        val userName = intent.getStringExtra("USER_NAME")
-        if (userName == null) {
-            val builder = AlertDialog.Builder(this, R.style.CustomAlertDialogTheme)
-            builder.setMessage("Silahkan login terlebih dahulu")
-                .setCancelable(false)
-                .setPositiveButton("Login") { dialog, id ->
-                    val loginIntent = Intent(this, SignIn::class.java)
-                    startActivity(loginIntent)
+    private fun fetchProfileImage() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val userId = currentUser.uid
+            val db = FirebaseFirestore.getInstance()
+
+            db.collection("users").document(userId).get()
+                .addOnSuccessListener { document ->
+                    if (document != null && document.exists()) {
+                        val profileImage = document.getString("profileImage")
+                        if (profileImage != null && profileImage.isNotEmpty()) {
+                            Picasso.get().load(profileImage).into(profileImageView)
+                        } else {
+                            profileImageView.setImageResource(R.drawable.baseline_person_24)
+                        }
+
+                        val userName = document.getString("name")
+                        if (userName != null && userName.isNotEmpty()) {
+                            textView2.text = "Welcome $userName"
+                        } else {
+                            textView2.text = "Welcome Guest"
+                        }
+                    }
                 }
-                .setNegativeButton("Cancel") { dialog, id ->
-                    dialog.dismiss()
+                .addOnFailureListener { exception ->
+                    Toast.makeText(this, "Failed to fetch profile image: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    Log.e("Firestore", "Error fetching profile image", exception)
+                    textView2.text = "Welcome Guest"
                 }
-            val alert = builder.create()
-            alert.show()
         } else {
-            val intent = Intent(this, TranslateVideoToText::class.java)
-            startActivity(intent)
+            profileImageView.setImageResource(R.drawable.baseline_person_24)
+            textView2.text = "Welcome Guest"
         }
     }
 
@@ -150,7 +162,7 @@ class Home : AppCompatActivity() {
                     mainTextContent.movementMethod = LinkMovementMethod.getInstance()
 
                     val formattedDate = timestamp?.let {
-                        SimpleDateFormat("dd MMMM yyyy", Locale.ENGLISH).format(it)
+                        SimpleDateFormat("dd MMMM yyyy", Locale("id", "ID")).format(it)
                     } ?: "Invalid timestamp"
 
                     mainTextTime.text = formattedDate
@@ -174,5 +186,61 @@ class Home : AppCompatActivity() {
             .addOnCompleteListener {
                 Log.d("Firestore", "Request complete")
             }
+    }
+
+    fun moveToTextToVideo(view: View) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val userId = currentUser.uid
+            val db = FirebaseFirestore.getInstance()
+
+            db.collection("users").document(userId).get()
+                .addOnSuccessListener { document ->
+                    if (document != null && document.exists()) {
+                        val userName = document.getString("name")
+                        if (userName != null && userName.isNotEmpty()) {
+                            textView2.text = "Welcome $userName"
+                            val intent = Intent(this, TranslateVideoToText::class.java)
+                            startActivity(intent)
+                        }
+                    }
+                }
+
+        } else {
+            val builder = AlertDialog.Builder(this, R.style.CustomAlertDialogTheme)
+            builder.setMessage("Silahkan login terlebih dahulu")
+                .setCancelable(false)
+                .setPositiveButton("Login") { dialog, id ->
+                    val loginIntent = Intent(this, SignIn::class.java)
+                    startActivity(loginIntent)
+                }
+                .setNegativeButton("Cancel") { dialog, id ->
+                    dialog.dismiss()
+                }
+            val alert = builder.create()
+            alert.show()
+        }
+    }
+    fun moveToSignIn(view: View) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val userId = currentUser.uid
+            val db = FirebaseFirestore.getInstance()
+
+            db.collection("users").document(userId).get()
+                .addOnSuccessListener { document ->
+                    if (document != null && document.exists()) {
+                        val userName = document.getString("name")
+                        if (userName != null && userName.isNotEmpty()) {
+                            textView2.text = "Welcome $userName"
+                            val intent = Intent(this, Profile::class.java)
+                            startActivity(intent)
+                        } else {
+                            val intent = Intent(this, SignIn::class.java)
+                            startActivity(intent)
+                        }
+                    }
+                }
+        }
     }
 }
