@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-feature android:name="android.hardware.camera" />
 
@@ -16,6 +17,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TubesRPLL"
         tools:targetApi="31">
+        <activity
+            android:name=".TranslateTextToBISINDO"
+            android:exported="false" />
+        <activity
+            android:name=".TranslateTextToASL"
+            android:exported="false" />
         <activity
             android:name=".NewsDetail"
             android:exported="false" />

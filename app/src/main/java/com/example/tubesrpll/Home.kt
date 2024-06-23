@@ -49,7 +49,7 @@ class Home : AppCompatActivity() {
 
         val clickableSpan = object : ClickableSpan() {
             override fun onClick(widget: View) {
-                val intent = Intent(this@Home, SignUp::class.java)
+                val intent = Intent(this@Home, AllNews::class.java)
                 startActivity(intent)
             }
 
@@ -75,11 +75,6 @@ class Home : AppCompatActivity() {
 
         getMainNews()
         fetchProfileImage()
-
-        textViewAllNews.setOnClickListener {
-            val intent = Intent(this, AllNews::class.java)
-            startActivity(intent)
-        }
 
         profileImageView.setOnClickListener { moveToSignIn(it) }
     }
@@ -219,6 +214,46 @@ class Home : AppCompatActivity() {
                 }
             val alert = builder.create()
             alert.show()
+        }
+    }
+
+    fun moveToTextToASL(view: View) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val userId = currentUser.uid
+            val db = FirebaseFirestore.getInstance()
+
+            db.collection("users").document(userId).get()
+                .addOnSuccessListener { document ->
+                    if (document != null && document.exists()) {
+                        val userName = document.getString("name")
+                        if (userName != null && userName.isNotEmpty()) {
+                            textView2.text = "Welcome $userName"
+                            val intent = Intent(this, TranslateTextToASL::class.java)
+                            startActivity(intent)
+                        }
+                    }
+                }
+        }
+    }
+
+    fun moveToTextToBISINDO(view: View) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val userId = currentUser.uid
+            val db = FirebaseFirestore.getInstance()
+
+            db.collection("users").document(userId).get()
+                .addOnSuccessListener { document ->
+                    if (document != null && document.exists()) {
+                        val userName = document.getString("name")
+                        if (userName != null && userName.isNotEmpty()) {
+                            textView2.text = "Welcome $userName"
+                            val intent = Intent(this, TranslateTextToBISINDO::class.java)
+                            startActivity(intent)
+                        }
+                    }
+                }
         }
     }
     fun moveToSignIn(view: View) {
