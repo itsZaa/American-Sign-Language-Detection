@@ -18,6 +18,9 @@
         android:theme="@style/Theme.TubesRPLL"
         tools:targetApi="31">
         <activity
+            android:name=".EditProfile"
+            android:exported="false" />
+        <activity
             android:name=".TranslateTextToBISINDO"
             android:exported="false" />
         <activity

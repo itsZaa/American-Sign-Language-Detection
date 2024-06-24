@@ -203,7 +203,8 @@ class Home : AppCompatActivity() {
 
         } else {
             val builder = AlertDialog.Builder(this, R.style.CustomAlertDialogTheme)
-            builder.setMessage("Silahkan login terlebih dahulu")
+            builder.setMessage("You need to login to \n" +
+                    "use the features")
                 .setCancelable(false)
                 .setPositiveButton("Login") { dialog, id ->
                     val loginIntent = Intent(this, SignIn::class.java)
@@ -234,6 +235,22 @@ class Home : AppCompatActivity() {
                         }
                     }
                 }
+        } else {
+            val builder = AlertDialog.Builder(this, R.style.CustomAlertDialogTheme)
+            builder.setMessage(
+                "You need to login to \n" +
+                        "use the features"
+            )
+                .setCancelable(false)
+                .setPositiveButton("Login") { dialog, id ->
+                    val loginIntent = Intent(this, SignIn::class.java)
+                    startActivity(loginIntent)
+                }
+                .setNegativeButton("Cancel") { dialog, id ->
+                    dialog.dismiss()
+                }
+            val alert = builder.create()
+            alert.show()
         }
     }
 
@@ -254,6 +271,22 @@ class Home : AppCompatActivity() {
                         }
                     }
                 }
+        } else {
+            val builder = AlertDialog.Builder(this, R.style.CustomAlertDialogTheme)
+            builder.setMessage(
+                "You need to login to \n" +
+                        "use the features"
+            )
+                .setCancelable(false)
+                .setPositiveButton("Login") { dialog, id ->
+                    val loginIntent = Intent(this, SignIn::class.java)
+                    startActivity(loginIntent)
+                }
+                .setNegativeButton("Cancel") { dialog, id ->
+                    dialog.dismiss()
+                }
+            val alert = builder.create()
+            alert.show()
         }
     }
     fun moveToSignIn(view: View) {

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -143,6 +144,11 @@ class Profile : AppCompatActivity() {
         } else {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    fun moveToEditProfile(view: View) {
+        val intent = Intent(this, EditProfile::class.java)
+        startActivity(intent)
     }
 
     private fun logout() {
