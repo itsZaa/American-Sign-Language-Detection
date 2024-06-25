@@ -8,7 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.tubesrpll.NewsAdapter
+import com.example.tubesrpll.viewmodel.NewsAdapter
 import com.example.tubesrpll.R
 import com.example.tubesrpll.model.NewsItem
 import com.google.firebase.auth.FirebaseAuth

@@ -1,4 +1,4 @@
-package com.example.tubesrpll
+package com.example.tubesrpll.viewmodel
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,9 +7,10 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.tubesrpll.R
 import com.google.firebase.storage.StorageReference
 
-class BISINDOImageAdapter (private val context: Context) : RecyclerView.Adapter<BISINDOImageAdapter.ASLImageViewHolder>() {
+class ASLImageAdapter(private val context: Context) : RecyclerView.Adapter<ASLImageAdapter.ASLImageViewHolder>() {
 
     private var imageList: List<StorageReference> = listOf()
 
@@ -35,6 +36,7 @@ class BISINDOImageAdapter (private val context: Context) : RecyclerView.Adapter<
         private val imageView: ImageView = itemView.findViewById(R.id.imageViewASL)
 
         fun bind(imageRef: StorageReference) {
+
             imageRef.downloadUrl.addOnSuccessListener { uri ->
                 Glide.with(context)
                     .load(uri)

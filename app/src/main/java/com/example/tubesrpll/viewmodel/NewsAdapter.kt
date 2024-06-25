@@ -1,4 +1,4 @@
-package com.example.tubesrpll
+package com.example.tubesrpll.viewmodel
 
 import android.content.Intent
 import android.text.SpannableString
@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.tubesrpll.R
 import com.example.tubesrpll.model.NewsItem
 import com.example.tubesrpll.view.NewsDetail
 import com.google.firebase.storage.FirebaseStorage
