@@ -1,4 +1,4 @@
-package com.example.tubesrpll
+package com.example.tubesrpll.view
 
 import android.content.Intent
 import android.os.Bundle
@@ -12,11 +12,11 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.tubesrpll.R
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 
 class SignUp : AppCompatActivity() {

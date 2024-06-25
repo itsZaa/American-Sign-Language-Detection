@@ -1,4 +1,4 @@
-package com.example.tubesrpll
+package com.example.tubesrpll.view
 
 import android.content.Intent
 import android.os.Bundle
@@ -16,28 +16,35 @@ import com.squareup.picasso.Picasso
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.tubesrpll.NewsAdapter
+import com.example.tubesrpll.R
+import com.example.tubesrpll.model.NewsItem
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import java.text.SimpleDateFormat
-import java.util.Locale
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.ktx.toObject
 
 class Home : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
-    private lateinit var mainTextHeadline: TextView
-    private lateinit var mainTextContent: TextView
-    private lateinit var mainTextTime: TextView
-    private lateinit var mainNewsContainer: View
     private lateinit var profileImageView: ImageView
     private lateinit var textView2: TextView
-
-    private var mainNewsId: String? = null
+    private lateinit var recyclerView: RecyclerView
+    private val newsList = mutableListOf<NewsItem>()
+    private lateinit var adapter: NewsAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_home)
         auth = FirebaseAuth.getInstance()
+
+        recyclerView = findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        adapter = NewsAdapter(newsList)
+        recyclerView.adapter = adapter
 
         textView2 = findViewById(R.id.textView)
         profileImageView = findViewById(R.id.imageProfile) // Ensure you have this ImageView in your layout
@@ -68,15 +75,8 @@ class Home : AppCompatActivity() {
         textViewAllNews.text = spannableString
         textViewAllNews.movementMethod = LinkMovementMethod.getInstance()
 
-        mainTextHeadline = findViewById(R.id.textHeadline)
-        mainTextContent = findViewById(R.id.textContent)
-        mainTextTime = findViewById(R.id.textTime)
-        mainNewsContainer = findViewById(R.id.newsContent)
-
         getMainNews()
         fetchProfileImage()
-
-        profileImageView.setOnClickListener { moveToSignIn(it) }
     }
 
     override fun onResume() {
@@ -122,66 +122,24 @@ class Home : AppCompatActivity() {
     private fun getMainNews() {
         val db = FirebaseFirestore.getInstance()
         db.collection("news")
-            .document("tMTHYlD0sUoV0LcMP3tr")
+            .orderBy("Timestamp", Query.Direction.DESCENDING) // Order by timestamp descending
+            .limit(1) // Limit to the latest document
             .get()
-            .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    mainNewsId = document.id
-                    val headline = document.getString("Headline") ?: ""
-                    val content = document.getString("Content") ?: ""
-                    val timestamp = document.getTimestamp("Timestamp")?.toDate()
-
-                    mainTextHeadline.text = headline
-
-                    val sentences = content.split("(?<=\\.)\\s".toRegex())
-                    val excerpt = sentences.take(1).joinToString(" ")
-
-                    val spannableContent = SpannableString("$excerpt... selengkapnya")
-                    val clickableSpan = object : ClickableSpan() {
-                        override fun onClick(widget: View) {
-                            val intent = Intent(widget.context, NewsDetail::class.java)
-                            intent.putExtra("documentId", mainNewsId)
-                            widget.context.startActivity(intent)
-                        }
-
-                        override fun updateDrawState(ds: TextPaint) {
-                            super.updateDrawState(ds)
-                            ds.isUnderlineText = true
-                        }
-                    }
-                    val startIndex = spannableContent.length - "selengkapnya".length
-                    val endIndex = spannableContent.length
-                    spannableContent.setSpan(clickableSpan, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-                    mainTextContent.text = spannableContent
-                    mainTextContent.movementMethod = LinkMovementMethod.getInstance()
-
-                    val formattedDate = timestamp?.let {
-                        SimpleDateFormat("dd MMMM yyyy", Locale("id", "ID")).format(it)
-                    } ?: "Invalid timestamp"
-
-                    mainTextTime.text = formattedDate
+            .addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    val document = querySnapshot.documents[0]
+                    val newsItem = document.toObject<NewsItem>()!!.copy(id = document.id)
+                    newsList.add(newsItem)
+                    adapter.notifyDataSetChanged()
                 } else {
-                    mainTextHeadline.text = "No news available"
-                    mainTextContent.text = "halo"
-                    mainTextTime.text = "17 August 1945"
+                    Log.d("Home", "No news found")
                 }
             }
-            .addOnFailureListener { e ->
-                mainTextHeadline.text = "Error fetching news"
-                mainTextContent.text = ""
-                mainTextTime.text = ""
-                Log.e("Firestore", "Error fetching news", e)
-            }
-            .addOnCanceledListener {
-                mainTextHeadline.text = "Request canceled"
-                mainTextContent.text = ""
-                mainTextTime.text = ""
-            }
-            .addOnCompleteListener {
-                Log.d("Firestore", "Request complete")
+            .addOnFailureListener { exception ->
+                Log.w("Home", "Error getting documents.", exception)
             }
     }
+
 
     fun moveToTextToVideo(view: View) {
         val currentUser = FirebaseAuth.getInstance().currentUser

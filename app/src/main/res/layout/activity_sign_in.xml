@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FAFAFAFA"
-    tools:context=".SignIn">
+    tools:context=".view.SignIn">
 
     <ImageView
         android:id="@+id/imageView"

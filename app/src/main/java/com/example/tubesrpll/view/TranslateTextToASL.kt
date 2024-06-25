@@ -1,4 +1,4 @@
-package com.example.tubesrpll
+package com.example.tubesrpll.view
 
 import android.os.Bundle
 import android.util.Log
@@ -7,37 +7,37 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.tubesrpll.ASLImageAdapter
+import com.example.tubesrpll.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.squareup.picasso.Picasso
 
-class TranslateTextToBISINDO : AppCompatActivity() {
+class TranslateTextToASL : AppCompatActivity() {
+
     private lateinit var storageReference: StorageReference
-    private lateinit var bisindoImageAdapter: BISINDOImageAdapter
+    private lateinit var aslImageAdapter: ASLImageAdapter
     private lateinit var profileImageView: ImageView
-    private lateinit var textViewBISINDO: TextView
+    private lateinit var textViewASL: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_translate_text_to_bisindo)
+        setContentView(R.layout.activity_translate_text_to_asl)
 
         storageReference = FirebaseStorage.getInstance().reference
 
-        val textASL = findViewById<EditText>(R.id.textInputEditTextBISINDO)
-        val buttonASL = findViewById<Button>(R.id.buttonResultBISINDO)
-        val recyclerViewASL = findViewById<RecyclerView>(R.id.recyclerViewBISINDO)
+        val textASL = findViewById<EditText>(R.id.textInputEditTextASL)
+        val buttonASL = findViewById<Button>(R.id.buttonResultASL)
+        val recyclerViewASL = findViewById<RecyclerView>(R.id.recyclerViewASL)
 
-        bisindoImageAdapter = BISINDOImageAdapter(this)
+        aslImageAdapter = ASLImageAdapter(this)
         recyclerViewASL.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        recyclerViewASL.adapter = bisindoImageAdapter
+        recyclerViewASL.adapter = aslImageAdapter
 
         buttonASL.setOnClickListener {
             val inputText = textASL.text.toString()
@@ -46,7 +46,7 @@ class TranslateTextToBISINDO : AppCompatActivity() {
             }
         }
 
-        textViewBISINDO = findViewById(R.id.textView)
+        textViewASL = findViewById(R.id.textView)
         profileImageView = findViewById(R.id.imageProfileASL)
         fetchProfileImage()
     }
@@ -74,20 +74,20 @@ class TranslateTextToBISINDO : AppCompatActivity() {
 
                         val userName = document.getString("name")
                         if (userName != null && userName.isNotEmpty()) {
-                            textViewBISINDO.text = "Welcome $userName"
+                            textViewASL.text = "Welcome $userName"
                         } else {
-                            textViewBISINDO.text = "Welcome Guest"
+                            textViewASL.text = "Welcome Guest"
                         }
                     }
                 }
                 .addOnFailureListener { exception ->
                     Toast.makeText(this, "Failed to fetch profile image: ${exception.message}", Toast.LENGTH_SHORT).show()
                     Log.e("Firestore", "Error fetching profile image", exception)
-                    textViewBISINDO.text = "Welcome Guest"
+                    textViewASL.text = "Welcome Guest"
                 }
         } else {
             profileImageView.setImageResource(R.drawable.baseline_person_24)
-            textViewBISINDO.text = "Welcome Guest"
+            textViewASL.text = "Welcome Guest"
         }
     }
 
@@ -96,17 +96,18 @@ class TranslateTextToBISINDO : AppCompatActivity() {
         val charArray = text.toCharArray()
 
         charArray.forEach { char ->
+            // Cek jika karakter adalah spasi
             if (char == ' ') {
-                val fileName = "BISINDO image/spasi.png"
+                val fileName = "ASL image/spasi.png"
                 val imageRef = storageReference.child(fileName)
                 imageList.add(imageRef)
-            } else {
-                val fileName = "BISINDO image/${char.lowercaseChar()}.png"
+            } else if (char.isLetter()) {
+                val fileName = "ASL image/${char.lowercaseChar()}.png"
                 val imageRef = storageReference.child(fileName)
                 imageList.add(imageRef)
             }
         }
 
-        bisindoImageAdapter.updateImageList(imageList)
+        aslImageAdapter.updateImageList(imageList)
     }
 }

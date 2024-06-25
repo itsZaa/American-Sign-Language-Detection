@@ -1,4 +1,4 @@
-package com.example.tubesrpll
+package com.example.tubesrpll.view
 
 import android.content.Intent
 import android.net.Uri
@@ -18,6 +18,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.bumptech.glide.Glide
+import com.example.tubesrpll.R
 
 class Profile : AppCompatActivity() {
 

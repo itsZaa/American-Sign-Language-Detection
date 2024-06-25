@@ -18,37 +18,37 @@
         android:theme="@style/Theme.TubesRPLL"
         tools:targetApi="31">
         <activity
-            android:name=".EditProfile"
+            android:name=".view.EditProfile"
             android:exported="false" />
         <activity
-            android:name=".TranslateTextToBISINDO"
+            android:name=".view.TranslateTextToBISINDO"
             android:exported="false" />
         <activity
-            android:name=".TranslateTextToASL"
+            android:name=".view.TranslateTextToASL"
             android:exported="false" />
         <activity
-            android:name=".NewsDetail"
+            android:name=".view.NewsDetail"
             android:exported="false" />
         <activity
-            android:name=".AllNews"
+            android:name=".view.AllNews"
             android:exported="false" />
         <activity
-            android:name=".Profile"
+            android:name=".view.Profile"
             android:exported="false" />
         <activity
-            android:name=".TranslateVideoToText"
+            android:name=".view.TranslateVideoToText"
             android:exported="false" />
         <activity
-            android:name=".SignIn"
+            android:name=".view.SignIn"
             android:exported="false" />
         <activity
-            android:name=".SignUp"
+            android:name=".view.SignUp"
             android:exported="false" />
         <activity
-            android:name=".Home"
+            android:name=".view.Home"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".view.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

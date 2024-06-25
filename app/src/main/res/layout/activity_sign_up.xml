@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FAFAFA"
-    tools:context=".SignUp">
+    tools:context=".view.SignUp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
