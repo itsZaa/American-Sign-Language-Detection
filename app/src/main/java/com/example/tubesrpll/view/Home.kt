@@ -261,12 +261,12 @@ class Home : AppCompatActivity() {
                             textView2.text = "Welcome $userName"
                             val intent = Intent(this, Profile::class.java)
                             startActivity(intent)
-                        } else {
-                            val intent = Intent(this, SignIn::class.java)
-                            startActivity(intent)
                         }
                     }
                 }
+        } else {
+            val intent = Intent(this, SignIn::class.java)
+            startActivity(intent)
         }
     }
 }
