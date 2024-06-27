@@ -141,7 +141,7 @@ class Home : AppCompatActivity() {
     }
 
 
-    fun moveToTextToVideo(view: View) {
+    fun moveToVideoASLToText(view: View) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
             val userId = currentUser.uid
@@ -153,7 +153,42 @@ class Home : AppCompatActivity() {
                         val userName = document.getString("name")
                         if (userName != null && userName.isNotEmpty()) {
                             textView2.text = "Welcome $userName"
-                            val intent = Intent(this, TranslateVideoToText::class.java)
+                            val intent = Intent(this, TranslateVideoASLToText::class.java)
+                            startActivity(intent)
+                        }
+                    }
+                }
+
+        } else {
+            val builder = AlertDialog.Builder(this, R.style.CustomAlertDialogTheme)
+            builder.setMessage("You need to login to \n" +
+                    "use the features")
+                .setCancelable(false)
+                .setPositiveButton("Login") { dialog, id ->
+                    val loginIntent = Intent(this, SignIn::class.java)
+                    startActivity(loginIntent)
+                }
+                .setNegativeButton("Cancel") { dialog, id ->
+                    dialog.dismiss()
+                }
+            val alert = builder.create()
+            alert.show()
+        }
+    }
+
+    fun moveToVideoBISINDOToText(view: View) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val userId = currentUser.uid
+            val db = FirebaseFirestore.getInstance()
+
+            db.collection("users").document(userId).get()
+                .addOnSuccessListener { document ->
+                    if (document != null && document.exists()) {
+                        val userName = document.getString("name")
+                        if (userName != null && userName.isNotEmpty()) {
+                            textView2.text = "Welcome $userName"
+                            val intent = Intent(this, TranslateVideoBISINDOToText::class.java)
                             startActivity(intent)
                         }
                     }

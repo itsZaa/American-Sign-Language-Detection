@@ -21,7 +21,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.tubesrpll.R
 
-class TranslateVideoToText : AppCompatActivity() {
+class TranslateVideoASLToText : AppCompatActivity() {
 
     private lateinit var textureView: TextureView
 
@@ -35,7 +35,7 @@ class TranslateVideoToText : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_translate_video_to_text)
+        setContentView(R.layout.activity_translate_video_asl_to_text)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)

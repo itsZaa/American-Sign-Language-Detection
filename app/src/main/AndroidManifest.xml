@@ -18,6 +18,9 @@
         android:theme="@style/Theme.TubesRPLL"
         tools:targetApi="31">
         <activity
+            android:name=".view.TranslateVideoBISINDOToText"
+            android:exported="false" />
+        <activity
             android:name=".view.EditProfile"
             android:exported="false" />
         <activity
@@ -36,7 +39,7 @@
             android:name=".view.Profile"
             android:exported="false" />
         <activity
-            android:name=".view.TranslateVideoToText"
+            android:name=".view.TranslateVideoASLToText"
             android:exported="false" />
         <activity
             android:name=".view.SignIn"
