@@ -1,6 +1,8 @@
 package com.example.tubesrpll.view
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
@@ -36,8 +38,21 @@ class TranslateTextToASL : AppCompatActivity() {
         val recyclerViewASL = findViewById<RecyclerView>(R.id.recyclerViewASL)
 
         aslImageAdapter = ASLImageAdapter(this)
-        recyclerViewASL.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        recyclerViewASL.layoutManager = LinearLayoutManager(this)
         recyclerViewASL.adapter = aslImageAdapter
+
+        textASL.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (s != null && s.length > 50) {
+                    textASL.setText(s.subSequence(0, 50))
+                    textASL.setSelection(50)
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
         buttonASL.setOnClickListener {
             val inputText = textASL.text.toString()
@@ -92,22 +107,20 @@ class TranslateTextToASL : AppCompatActivity() {
     }
 
     private fun updateASLImages(text: String) {
-        val imageList = mutableListOf<StorageReference>()
-        val charArray = text.toCharArray()
+        val imageList = mutableListOf<List<StorageReference>>()
+        val lines = text.split(" ")
 
-        charArray.forEach { char ->
-            // Cek jika karakter adalah spasi
-            if (char == ' ') {
-                val fileName = "ASL image/spasi.png"
-                val imageRef = storageReference.child(fileName)
-                imageList.add(imageRef)
-            } else if (char.isLetter()) {
+        lines.forEach { line ->
+            val charList = mutableListOf<StorageReference>()
+            line.forEach { char ->
                 val fileName = "ASL image/${char.lowercaseChar()}.png"
                 val imageRef = storageReference.child(fileName)
-                imageList.add(imageRef)
+                charList.add(imageRef)
             }
+            imageList.add(charList)
         }
 
         aslImageAdapter.updateImageList(imageList)
     }
 }
+
