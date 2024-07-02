@@ -13,11 +13,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.tubesrpll.R
-import com.google.firebase.Firebase
+import com.example.tubesrpll.model.User  // Pastikan untuk mengimpor data class User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.FirebaseFirestore
 
 class SignUp : AppCompatActivity() {
 
@@ -27,7 +27,7 @@ class SignUp : AppCompatActivity() {
     private lateinit var passEt: EditText
     private lateinit var signUpButton: Button
     private lateinit var firebaseAuth: FirebaseAuth
-    private var db = Firebase.firestore
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()  // Inisialisasi Firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,11 +53,8 @@ class SignUp : AppCompatActivity() {
                         val user = firebaseAuth.currentUser
                         user?.let {
                             val userId = it.uid
-                            val userMap = hashMapOf(
-                                "name" to name,
-                                "phone" to phone
-                            )
-                            db.collection("users").document(userId).set(userMap)
+                            val newUser = User(id = userId, name = name, phone = phone, role = "user")
+                            firestore.collection("users").document(userId).set(newUser)
                                 .addOnSuccessListener {
                                     Toast.makeText(this, "Registrasi berhasil, check email untuk LOGIN", Toast.LENGTH_SHORT).show()
                                     sendEmailVerification(user)
