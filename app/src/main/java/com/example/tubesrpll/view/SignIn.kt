@@ -52,32 +52,32 @@ class SignIn : AppCompatActivity() {
                                             val userData = document.toObject(User::class.java)
                                             if (userData?.role == "user") {
                                                 val name = userData.name
-                                                Toast.makeText(this, "Login berhasil", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(this, "Login Success", Toast.LENGTH_SHORT).show()
                                                 val intent = Intent(this, Home::class.java)
                                                 intent.putExtra("USER_NAME", name)
                                                 startActivity(intent)
                                             } else {
-                                                Toast.makeText(this, "Akses ditolak. Hanya pengguna dengan role 'user' yang bisa login.", Toast.LENGTH_LONG).show()
+                                                NotificationDialog.showDialog(this, "Access Denied", "Hanya pengguna dengan role 'user' yang bisa login.")
                                                 firebaseAuth.signOut()
                                             }
                                         } else {
-                                            Toast.makeText(this, "Data user tidak ditemukan", Toast.LENGTH_SHORT).show()
+                                            NotificationDialog.showDialog(this, "Error", "Data user tidak ditemukan")
                                         }
                                     }
                                     .addOnFailureListener { e ->
                                         Log.e("FirestoreError", "Failed to get user data: ", e)
-                                        Toast.makeText(this, "Gagal mendapatkan data user", Toast.LENGTH_SHORT).show()
+                                        NotificationDialog.showDialog(this, "Error", "Gagal mendapatkan data user")
                                     }
                             } else {
-                                Toast.makeText(this, "Email belum diverifikasi. Silakan cek email Anda untuk verifikasi.", Toast.LENGTH_LONG).show()
+                                NotificationDialog.showDialog(this, "Email not verified", "Silakan cek email Anda untuk verifikasi.")
                             }
                         }
                     } else {
-                        Toast.makeText(this, "Password/email salah", Toast.LENGTH_SHORT).show()
+                        NotificationDialog.showDialog(this, "Login Failed", "Please check your email/password")
                     }
                 }
             } else {
-                Toast.makeText(this, "Empty Fields Are not Allowed !!", Toast.LENGTH_SHORT).show()
+                NotificationDialog.showDialog(this, "Error", "Empty Fields Are not Allowed !!")
             }
         }
 

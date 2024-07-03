@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Silent Echo</string>
+    <string name="close">Close</string>
 </resources>

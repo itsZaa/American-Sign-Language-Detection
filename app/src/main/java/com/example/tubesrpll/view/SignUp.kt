@@ -13,7 +13,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.tubesrpll.R
-import com.example.tubesrpll.model.User  // Pastikan untuk mengimpor data class User
+import com.example.tubesrpll.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseUser
@@ -27,7 +27,7 @@ class SignUp : AppCompatActivity() {
     private lateinit var passEt: EditText
     private lateinit var signUpButton: Button
     private lateinit var firebaseAuth: FirebaseAuth
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()  // Inisialisasi Firestore
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,33 +48,37 @@ class SignUp : AppCompatActivity() {
             val pass = passEt.text.toString()
 
             if (name.isNotEmpty() && email.isNotEmpty() && phone.isNotEmpty() && pass.isNotEmpty()) {
-                firebaseAuth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        val user = firebaseAuth.currentUser
-                        user?.let {
-                            val userId = it.uid
-                            val newUser = User(id = userId, name = name, phone = phone, role = "user")
-                            firestore.collection("users").document(userId).set(newUser)
-                                .addOnSuccessListener {
-                                    Toast.makeText(this, "Registrasi berhasil, check email untuk LOGIN", Toast.LENGTH_SHORT).show()
-                                    sendEmailVerification(user)
-                                }
-                                .addOnFailureListener { e ->
-                                    Log.e("FirestoreError", "Failed to add user data: ", e)
-                                    user.delete()
-                                    Toast.makeText(this, "Registrasi gagal, coba lagi", Toast.LENGTH_SHORT).show()
-                                }
-                        }
-                    } else {
-                        if (task.exception is FirebaseAuthUserCollisionException) {
-                            Toast.makeText(this, "Email sudah digunakan. Silakan gunakan email lain.", Toast.LENGTH_LONG).show()
+                if (pass.length >= 8) {
+                    firebaseAuth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val user = firebaseAuth.currentUser
+                            user?.let {
+                                val userId = it.uid
+                                val newUser = User(id = userId, name = name, phone = phone, role = "user")
+                                firestore.collection("users").document(userId).set(newUser)
+                                    .addOnSuccessListener {
+                                        Toast.makeText(this, "Register Success, check email untuk LOGIN", Toast.LENGTH_SHORT).show()
+                                        sendEmailVerification(user)
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Log.e("FirestoreError", "Failed to add user data: ", e)
+                                        user.delete()
+                                        NotificationDialog.showDialog(this, "Register Failed", "Please fill the requirement!")
+                                    }
+                            }
                         } else {
-                            Toast.makeText(this, "Registrasi gagal, coba lagi", Toast.LENGTH_SHORT).show()
+                            if (task.exception is FirebaseAuthUserCollisionException) {
+                                NotificationDialog.showDialog(this, "Email sudah digunakan", "Silakan gunakan email lain")
+                            } else {
+                                NotificationDialog.showDialog(this, "Register Failed", "Coba lagi")
+                            }
                         }
                     }
+                } else {
+                    NotificationDialog.showDialog(this, "Error", "Password harus minimal 8 karakter")
                 }
             } else {
-                Toast.makeText(this, "Semua field harus diisi", Toast.LENGTH_SHORT).show()
+                NotificationDialog.showDialog(this, "Error", "Empty Fields Are not Allowed !!")
             }
         }
 
