@@ -34,6 +34,9 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    aaptOptions {
+        noCompress "tflite"
+    }
 }
 
 dependencies {
@@ -52,6 +55,8 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation("com.github.dhaval2404:imagepicker:2.1")
     implementation(libs.firebase.storage)
+    implementation("com.google.mlkit:object-detection-custom:17.0.1")
+    implementation ("com.google.mlkit:linkfirebase:17.0.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
