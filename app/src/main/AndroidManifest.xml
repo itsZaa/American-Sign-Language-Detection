@@ -54,7 +54,7 @@
             android:name=".view.Home"
             android:exported="false" />
         <activity
-            android:name=".view.MainActivity"
+            android:name=".view.loadingPage"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
