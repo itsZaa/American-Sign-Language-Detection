@@ -66,7 +66,8 @@ class TranslateVideoToText : AppCompatActivity() {
         textViewResult = findViewById(R.id.textViewResult)
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
-        tflite = Interpreter(loadModelFile("assets/ASL_model.tflite"))
+        // Load your TFLite model
+        tflite = Interpreter(loadModelFile("ASL_model.tflite"))
 
         startCamera()
     }
@@ -166,7 +167,7 @@ class TranslateVideoToText : AppCompatActivity() {
         val bitmap = textureView.bitmap ?: return
         val inputBuffer = convertBitmapToByteBuffer(bitmap)
 
-        val outputBuffer = ByteBuffer.allocateDirect(4 * 1) // Assuming output is a single float
+        val outputBuffer = ByteBuffer.allocateDirect(4) // Assuming output is a single float
         outputBuffer.order(ByteOrder.nativeOrder())
 
         // Run the model
@@ -175,11 +176,13 @@ class TranslateVideoToText : AppCompatActivity() {
         // Parse the output and update the TextView
         outputBuffer.rewind()
         val result = outputBuffer.float
-        val resultText = "Recognized Sign: $result" // Modify this to fit your model's output
+        val resultText = "$result" // Modify this to fit your model's output format
+
         runOnUiThread {
             textViewResult.text = resultText
         }
     }
+
 
     private fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
         val inputImageWidth = 224 // Replace with your model's input width
@@ -212,14 +215,16 @@ class TranslateVideoToText : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        stopCamera()
-        scheduler.shutdown()
+        if (::scheduler.isInitialized) {
+            scheduler.shutdown()
+        }
     }
 
     private fun stopCamera() {
         try {
             myCameraCaptureSession?.abortCaptures()
         } catch (e: CameraAccessException) {
-            throw RuntimeException(e)}
+            throw RuntimeException(e)
         }
+    }
 }
