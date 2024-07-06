@@ -10,6 +10,7 @@ import android.hardware.camera2.params.OutputConfiguration
 import android.hardware.camera2.params.SessionConfiguration
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
@@ -57,17 +58,37 @@ class TranslateVideoToText : AppCompatActivity() {
             insets
         }
 
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.CAMERA),
-            PackageManager.PERMISSION_GRANTED
-        )
+        Log.d("Lifecycle", "onCreate called")
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.CAMERA),
+                PackageManager.PERMISSION_GRANTED
+            )
+        } else {
+            initializeComponents()
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PackageManager.PERMISSION_GRANTED && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            initializeComponents()
+        } else {
+            Log.e("Permissions", "Camera permission not granted")
+        }
+    }
+
+    private fun initializeComponents() {
+        Log.d("Lifecycle", "Initializing components")
         textureView = findViewById(R.id.textureView)
         textViewResult = findViewById(R.id.textViewResult)
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
         // Load your TFLite model
         tflite = Interpreter(loadModelFile("ASL_model.tflite"))
+        Log.d("ModelLoading", "Model successfully loaded")
 
         startCamera()
     }
@@ -84,15 +105,18 @@ class TranslateVideoToText : AppCompatActivity() {
     private val stateCallback = object : CameraDevice.StateCallback() {
         @RequiresApi(Build.VERSION_CODES.P)
         override fun onOpened(cameraDevice: CameraDevice) {
+            Log.d("CameraState", "Camera opened")
             myCameraDevice = cameraDevice
             startCameraSession()
         }
 
         override fun onDisconnected(cameraDevice: CameraDevice) {
+            Log.d("CameraState", "Camera disconnected")
             myCameraDevice?.close()
         }
 
         override fun onError(cameraDevice: CameraDevice, error: Int) {
+            Log.e("CameraState", "Error opening camera: $error")
             myCameraDevice?.close()
             myCameraDevice = null
         }
@@ -100,7 +124,12 @@ class TranslateVideoToText : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.P)
     private fun startCameraSession() {
+        Log.d("CameraSession", "Starting camera session")
         val surfaceTexture: SurfaceTexture? = textureView.surfaceTexture
+        if (surfaceTexture == null) {
+            Log.e("CameraSession", "SurfaceTexture is null!")
+            return
+        }
         val surface = Surface(surfaceTexture)
         try {
             captureRequestBuilder = myCameraDevice?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW) ?: return
@@ -112,6 +141,7 @@ class TranslateVideoToText : AppCompatActivity() {
                 mainExecutor,
                 object : CameraCaptureSession.StateCallback() {
                     override fun onConfigured(@NonNull cameraCaptureSession: CameraCaptureSession) {
+                        Log.d("CameraSession", "Camera session configured")
                         myCameraCaptureSession = cameraCaptureSession
                         captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_MODE_AUTO)
                         try {
@@ -123,6 +153,7 @@ class TranslateVideoToText : AppCompatActivity() {
                     }
 
                     override fun onConfigureFailed(@NonNull cameraCaptureSession: CameraCaptureSession) {
+                        Log.e("CameraSession", "Camera session configuration failed")
                         myCameraCaptureSession = null
                     }
                 }
@@ -135,6 +166,7 @@ class TranslateVideoToText : AppCompatActivity() {
 
     private fun startCamera() {
         try {
+            Log.d("Camera", "Starting camera")
             stringCameraID = if (isFrontCamera) {
                 cameraManager.cameraIdList.first { id ->
                     cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
@@ -146,15 +178,22 @@ class TranslateVideoToText : AppCompatActivity() {
             }
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.CAMERA),
+                    PackageManager.PERMISSION_GRANTED
+                )
                 return
             }
             cameraManager.openCamera(stringCameraID, stateCallback, null)
         } catch (e: CameraAccessException) {
+            Log.e("Camera", "Camera access exception", e)
             throw RuntimeException(e)
         }
     }
 
     private fun startFrameProcessing() {
+        Log.d("FrameProcessing", "Starting frame processing")
         scheduler = Executors.newScheduledThreadPool(1)
         scheduler.scheduleAtFixedRate({
             if (textureView.isAvailable) {
@@ -164,29 +203,36 @@ class TranslateVideoToText : AppCompatActivity() {
     }
 
     private fun processFrame() {
+        Log.d("FrameProcessing", "Processing frame")
         val bitmap = textureView.bitmap ?: return
+        Log.d("FrameProcessing", "Bitmap captured")
         val inputBuffer = convertBitmapToByteBuffer(bitmap)
 
         val outputBuffer = ByteBuffer.allocateDirect(4) // Assuming output is a single float
         outputBuffer.order(ByteOrder.nativeOrder())
 
-        // Run the model
-        tflite.run(inputBuffer, outputBuffer)
+        try {
+            // Run the model
+            tflite.run(inputBuffer, outputBuffer)
+            Log.d("FrameProcessing", "Model run completed successfully")
 
-        // Parse the output and update the TextView
-        outputBuffer.rewind()
-        val result = outputBuffer.float
-        val resultText = "$result" // Modify this to fit your model's output format
+            // Parse the output and update the TextView
+            outputBuffer.rewind()
+            val result = outputBuffer.float
+            val resultText = "$result" // Modify this to fit your model's output format
 
-        runOnUiThread {
-            textViewResult.text = resultText
+            runOnUiThread {
+                textViewResult.text = resultText
+                Log.d("FrameProcessing", "Result updated: $resultText")
+            }
+        } catch (e: Exception) {
+            Log.e("FrameProcessing", "Error running model", e)
         }
     }
 
-
     private fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
-        val inputImageWidth = 224 // Replace with your model's input width
-        val inputImageHeight = 224 // Replace with your model's input height
+        val inputImageWidth = 50 // Replace with your model's input width
+        val inputImageHeight = 50 // Replace with your model's input height
         val inputBuffer = ByteBuffer.allocateDirect(4 * inputImageWidth * inputImageHeight * 3)
         inputBuffer.order(ByteOrder.nativeOrder())
 
