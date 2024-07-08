@@ -3,11 +3,13 @@ package com.example.tubesrpll.view
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
+import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
 import android.hardware.camera2.params.OutputConfiguration
 import android.hardware.camera2.params.SessionConfiguration
+import android.media.Image
+import android.media.ImageReader
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -29,6 +31,7 @@ import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.io.FileInputStream
+import java.io.IOException
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -47,6 +50,9 @@ class TranslateVideoToText : AppCompatActivity() {
 
     private lateinit var tflite: Interpreter
     private lateinit var scheduler: ScheduledExecutorService
+    private lateinit var imageReader: ImageReader
+
+    private lateinit var labels: List<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,10 +89,16 @@ class TranslateVideoToText : AppCompatActivity() {
     private fun initializeComponents() {
         Log.d("Lifecycle", "Initializing components")
         textureView = findViewById(R.id.textureView)
+        textViewResult = findViewById(R.id.textViewResult)
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+
+        // Load your TFLite model
         tflite = Interpreter(loadModelFile("ASL_model.tflite"))
         Log.d("ModelLoading", "Model successfully loaded")
-        tflite = Interpreter(loadModelFile("ASL_model.tflite"))
+
+        // Load labels
+        labels = loadLabels()
+        Log.d("ModelLoading", "Labels successfully loaded")
 
         startCamera()
     }
@@ -98,6 +110,18 @@ class TranslateVideoToText : AppCompatActivity() {
         val startOffset = fileDescriptor.startOffset
         val declaredLength = fileDescriptor.declaredLength
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
+    }
+
+    private fun loadLabels(): List<String> {
+        val labels = mutableListOf<String>()
+        try {
+            assets.open("labels.txt").bufferedReader().useLines { lines ->
+                lines.forEach { labels.add(it) }
+            }
+        } catch (e: IOException) {
+            Log.e("LabelLoading", "Error loading label file", e)
+        }
+        return labels
     }
 
     private val stateCallback = object : CameraDevice.StateCallback() {
@@ -129,13 +153,25 @@ class TranslateVideoToText : AppCompatActivity() {
             return
         }
         val surface = Surface(surfaceTexture)
+
+        // Initialize ImageReader
+        imageReader = ImageReader.newInstance(640, 480, ImageFormat.YUV_420_888, 2)
+        imageReader.setOnImageAvailableListener(onImageAvailableListener, null)
+        val imageReaderSurface = imageReader.surface
+
         try {
             captureRequestBuilder = myCameraDevice?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW) ?: return
             captureRequestBuilder.addTarget(surface)
-            val outputConfiguration = OutputConfiguration(surface)
+            captureRequestBuilder.addTarget(imageReaderSurface)
+
+            val outputConfigurations = listOf(
+                OutputConfiguration(surface),
+                OutputConfiguration(imageReaderSurface)
+            )
+
             val sessionConfiguration = SessionConfiguration(
                 SessionConfiguration.SESSION_REGULAR,
-                listOf(outputConfiguration),
+                outputConfigurations,
                 mainExecutor,
                 object : CameraCaptureSession.StateCallback() {
                     override fun onConfigured(@NonNull cameraCaptureSession: CameraCaptureSession) {
@@ -194,19 +230,18 @@ class TranslateVideoToText : AppCompatActivity() {
         Log.d("FrameProcessing", "Starting frame processing")
         scheduler = Executors.newScheduledThreadPool(1)
         scheduler.scheduleAtFixedRate({
-            if (textureView.isAvailable) {
-                processFrame()
-            }
-        }, 0, 100, TimeUnit.MILLISECONDS)
+            // Frame processing is handled by ImageReader.OnImageAvailableListener
+        }, 0, 100, TimeUnit.MILLISECONDS) // Adjust the interval as needed
     }
 
-    private fun processFrame() {
-        Log.d("FrameProcessing", "Processing frame")
-        val bitmap = textureView.bitmap ?: return
-        Log.d("FrameProcessing", "Bitmap captured")
-        val inputBuffer = convertBitmapToByteBuffer(bitmap)
+    private val onImageAvailableListener = ImageReader.OnImageAvailableListener { reader ->
+        val image = reader.acquireLatestImage() ?: return@OnImageAvailableListener
+        Log.d("FrameProcessing", "Image captured")
+        val inputBuffer = convertImageToByteBuffer(image)
+        image.close()
 
-        val outputBuffer = ByteBuffer.allocateDirect(4) // Assuming output is a single float
+        // Allocate output buffer according to the model output size
+        val outputBuffer = ByteBuffer.allocateDirect(4 * 80 * 80) // Ukuran output sesuai dengan model
         outputBuffer.order(ByteOrder.nativeOrder())
 
         try {
@@ -216,8 +251,19 @@ class TranslateVideoToText : AppCompatActivity() {
 
             // Parse the output and update the TextView
             outputBuffer.rewind()
-            val result = outputBuffer.float
-            val resultText = "$result" // Modify this to fit your model's output format
+            val resultIndex = outputBuffer.asFloatBuffer().let { buffer ->
+                var maxProb = -Float.MAX_VALUE
+                var maxIndex = -1
+                for (i in 0 until 80 * 80) { // Periksa 80x80 output
+                    val prob = buffer.get(i)
+                    if (prob > maxProb) {
+                        maxProb = prob
+                        maxIndex = i
+                    }
+                }
+                maxIndex
+            }
+            val resultText = labels.getOrNull(resultIndex) ?: "Unknown"
 
             runOnUiThread {
                 textViewResult.text = resultText
@@ -228,27 +274,49 @@ class TranslateVideoToText : AppCompatActivity() {
         }
     }
 
-    private fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
-        val inputImageWidth = 50 // Replace with your model's input width
-        val inputImageHeight = 50 // Replace with your model's input height
+
+    private fun convertImageToByteBuffer(image: Image): ByteBuffer {
+        val inputImageWidth = 50 // Lebar input model yang benar
+        val inputImageHeight = 50 // Tinggi input model yang benar
         val inputBuffer = ByteBuffer.allocateDirect(4 * inputImageWidth * inputImageHeight * 3)
         inputBuffer.order(ByteOrder.nativeOrder())
 
-        val intValues = IntArray(inputImageWidth * inputImageHeight)
-        bitmap.getPixels(intValues, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        val yBuffer = image.planes[0].buffer
+        val uBuffer = image.planes[1].buffer
+        val vBuffer = image.planes[2].buffer
+
+        val ySize = yBuffer.remaining()
+        val uSize = uBuffer.remaining()
+        val vSize = vBuffer.remaining()
+
+        val yuvBytes = ByteArray(ySize + uSize + vSize)
+        yBuffer.get(yuvBytes, 0, ySize)
+        uBuffer.get(yuvBytes, ySize, uSize)
+        vBuffer.get(yuvBytes, ySize + uSize, vSize)
 
         var pixel = 0
         for (i in 0 until inputImageWidth) {
             for (j in 0 until inputImageHeight) {
-                val value = intValues[pixel++]
+                val y = yuvBytes[pixel].toInt() and 0xFF
+                val u = yuvBytes[ySize + (pixel / 2)].toInt() and 0xFF
+                val v = yuvBytes[ySize + uSize + (pixel / 2)].toInt() and 0xFF
 
-                inputBuffer.putFloat(((value shr 16 and 0xFF) - 128f) / 128f)
-                inputBuffer.putFloat(((value shr 8 and 0xFF) - 128f) / 128f)
-                inputBuffer.putFloat(((value and 0xFF) - 128f) / 128f)
+                // Convert YUV to RGB
+                val r = y + (1.370705 * (v - 128)).toInt()
+                val g = y - (0.337633 * (u - 128)).toInt() - (0.698001 * (v - 128)).toInt()
+                val b = y + (1.732446 * (u - 128)).toInt()
+
+                inputBuffer.putFloat((r / 255f))
+                inputBuffer.putFloat((g / 255f))
+                inputBuffer.putFloat((b / 255f))
+
+                pixel++
             }
         }
         return inputBuffer
     }
+
+
 
     fun switchCamera(view: View) {
         isFrontCamera = !isFrontCamera
