@@ -22,7 +22,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.room.jarjarred.org.antlr.v4.gui.Interpreter
 import com.example.tubesrpll.R
 import org.tensorflow.lite.Interpreter
 import java.nio.ByteBuffer
@@ -85,14 +84,9 @@ class TranslateVideoToText : AppCompatActivity() {
         Log.d("Lifecycle", "Initializing components")
         textureView = findViewById(R.id.textureView)
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
-
-<<<<<<< Updated upstream
-        // Load your TFLite model
         tflite = Interpreter(loadModelFile("ASL_model.tflite"))
         Log.d("ModelLoading", "Model successfully loaded")
-=======
         tflite = Interpreter(loadModelFile("ASL_model.tflite"))
->>>>>>> Stashed changes
 
         startCamera()
     }
@@ -203,7 +197,7 @@ class TranslateVideoToText : AppCompatActivity() {
             if (textureView.isAvailable) {
                 processFrame()
             }
-        }, 0, 100, TimeUnit.MILLISECONDS) // Adjust the interval as needed
+        }, 0, 100, TimeUnit.MILLISECONDS)
     }
 
     private fun processFrame() {
