@@ -1,4 +1,4 @@
-A
+﻿A
 B
 C
 D
@@ -24,4 +24,6 @@ W
 X
 Y
 Z
+Delete
+Nothing
 Space
