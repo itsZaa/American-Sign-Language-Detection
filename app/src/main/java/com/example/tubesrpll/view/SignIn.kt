@@ -27,6 +27,7 @@ class SignIn : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in)
 
+        // Inisialisasi UI dan instance Firebase
         emailEt = findViewById(R.id.textInputEditText)
         passEt = findViewById(R.id.editTextPassword)
         signInButton = findViewById(R.id.button6)
@@ -34,6 +35,7 @@ class SignIn : AppCompatActivity() {
         firebaseAuth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
 
+        // Set onClickListener untuk tombol sign in
         signInButton.setOnClickListener {
             val email = emailEt.text.toString()
             val pass = passEt.text.toString()
@@ -45,6 +47,7 @@ class SignIn : AppCompatActivity() {
                         user?.let {
                             if (it.isEmailVerified) {
                                 val userId = it.uid
+                                // Ambil data pengguna dari Firestore setelah berhasil login
                                 firestore.collection("users").document(userId).get()
                                     .addOnSuccessListener { document ->
                                         if (document != null) {
@@ -54,34 +57,36 @@ class SignIn : AppCompatActivity() {
                                             intent.putExtra("USER_NAME", name)
                                             startActivity(intent)
                                         } else {
-                                            Toast.makeText(this, "Data user tidak ditemukan", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(this, "Data pengguna tidak ditemukan", Toast.LENGTH_SHORT).show()
                                         }
                                     }
                             } else {
+                                // Tampilkan pesan jika email belum diverifikasi
                                 Toast.makeText(this, "Email belum diverifikasi. Silakan cek email Anda untuk verifikasi.", Toast.LENGTH_LONG).show()
                             }
                         }
                     } else {
+                        // Tampilkan pesan jika login gagal
                         Toast.makeText(this, "Password/email salah", Toast.LENGTH_SHORT).show()
                     }
                 }
             } else {
-                Toast.makeText(this, "Empty Fields Are not Allowed !!", Toast.LENGTH_SHORT).show()
+                // Tampilkan pesan jika ada field yang kosong
+                Toast.makeText(this, "Field kosong tidak diizinkan!", Toast.LENGTH_SHORT).show()
             }
         }
 
+        // Setup teks yang bisa diklik untuk navigasi ke halaman SignUp
         val textView = findViewById<TextView>(R.id.textView7)
-
-        val text = "Don’t have accounts? Register Now!"
+        val text = "Belum punya akun? Daftar sekarang!"
         val spannableString = SpannableString(text)
-
         val clickableSpan = object : ClickableSpan() {
             override fun onClick(widget: View) {
                 val intent = Intent(this@SignIn, SignUp::class.java)
                 startActivity(intent)
             }
         }
-
+        // Atur bagian teks yang bisa diklik
         spannableString.setSpan(clickableSpan, 21, 34, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         textView.text = spannableString
         textView.movementMethod = android.text.method.LinkMovementMethod.getInstance()

@@ -33,6 +33,7 @@ class SignUp : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up)
 
+        // Inisialisasi elemen UI dan instance Firebase
         nameEt = findViewById(R.id.textInputEditNama)
         emailEt = findViewById(R.id.textInputEditEmail)
         phoneEt = findViewById(R.id.textInputEditPhone)
@@ -41,6 +42,7 @@ class SignUp : AppCompatActivity() {
 
         firebaseAuth = FirebaseAuth.getInstance()
 
+        // Set onClickListener untuk tombol sign up
         signUpButton.setOnClickListener {
             val name = nameEt.text.toString()
             val email = emailEt.text.toString()
@@ -57,18 +59,20 @@ class SignUp : AppCompatActivity() {
                                 "name" to name,
                                 "phone" to phone
                             )
+                            // Simpan data pengguna ke Firestore setelah berhasil registrasi
                             db.collection("users").document(userId).set(userMap)
                                 .addOnSuccessListener {
                                     Toast.makeText(this, "Registrasi berhasil, check email untuk LOGIN", Toast.LENGTH_SHORT).show()
                                     sendEmailVerification(user)
                                 }
                                 .addOnFailureListener { e ->
-                                    Log.e("FirestoreError", "Failed to add user data: ", e)
+                                    Log.e("FirestoreError", "Gagal menambahkan data pengguna: ", e)
                                     user.delete()
                                     Toast.makeText(this, "Registrasi gagal, coba lagi", Toast.LENGTH_SHORT).show()
                                 }
                         }
                     } else {
+                        // Tangani jika registrasi gagal
                         if (task.exception is FirebaseAuthUserCollisionException) {
                             Toast.makeText(this, "Email sudah digunakan. Silakan gunakan email lain.", Toast.LENGTH_LONG).show()
                         } else {
@@ -77,12 +81,14 @@ class SignUp : AppCompatActivity() {
                     }
                 }
             } else {
+                // Tampilkan pesan jika ada field yang kosong
                 Toast.makeText(this, "Semua field harus diisi", Toast.LENGTH_SHORT).show()
             }
         }
 
+        // Setup teks yang bisa diklik untuk navigasi ke halaman SignIn
         val textView = findViewById<TextView>(R.id.signin)
-        val text = "Already have accounts? Sign in"
+        val text = "Sudah punya akun? Masuk"
         val spannableString = SpannableString(text)
 
         val clickableSpan = object : ClickableSpan() {
@@ -92,15 +98,16 @@ class SignUp : AppCompatActivity() {
             }
         }
 
-        spannableString.setSpan(clickableSpan, 23, 30, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        spannableString.setSpan(clickableSpan, 20, 25, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         textView.text = spannableString
         textView.movementMethod = android.text.method.LinkMovementMethod.getInstance()
     }
 
+    // Method untuk mengirim email verifikasi
     private fun sendEmailVerification(user: FirebaseUser) {
         user.sendEmailVerification().addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                Toast.makeText(this, "Email verifikasi telah dikirim. Silakan periksa email Anda untuk LOGIN.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Email verifikasi telah terkirim. Periksa email Anda untuk lanjut LOGIN.", Toast.LENGTH_LONG).show()
                 val intent = Intent(this, SignIn::class.java)
                 startActivity(intent)
             } else {

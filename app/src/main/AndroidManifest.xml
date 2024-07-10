@@ -2,12 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Mengatur permissions yang dibutuhkan oleh aplikasi dalam hal ini akses kamera, internet, read and write external storage-->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-
+    <!-- Menyatakan bahwa aplikasi ini menggunakan kamera hardware perangkat -->
     <uses-feature android:name="android.hardware.camera" />
 
     <application
@@ -20,6 +21,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TubesRPLL"
         tools:targetApi="31">
+
+        <!-- Daftar aktivitas dalam aplikasi -->
         <activity
             android:name=".view.EditProfile"
             android:exported="false" />
@@ -50,16 +53,18 @@
         <activity
             android:name=".view.Home"
             android:exported="false" />
+
+        <!-- Halaman loading yang pertama kali dibuka saat aplikasi dijalankan -->
         <activity
             android:name=".view.loadingPage"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <!-- Meta-data untuk font yang sudah dimuat sebelumnya -->
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

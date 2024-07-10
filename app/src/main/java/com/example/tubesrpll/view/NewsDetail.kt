@@ -21,6 +21,7 @@ import java.util.*
 
 class NewsDetail : AppCompatActivity() {
 
+    // Deklarasi variabel untuk komponen UI
     private lateinit var profileImageView: ImageView
     private lateinit var textView2: TextView
     private lateinit var textDetailHeadline: TextView
@@ -33,27 +34,32 @@ class NewsDetail : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_news_detail)
 
+        // Inisialisasi komponen UI
         textDetailHeadline = findViewById(R.id.textDetailHeadline)
         textDetailTime = findViewById(R.id.textDetailTime)
         textDetailContent = findViewById(R.id.textDetailContent)
         imageDetail = findViewById(R.id.imageView2)
 
+        // Set listener untuk window insets agar tampilan full-screen
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
+        // Mendapatkan ID dokumen dari intent dan mengambil detail berita
         val documentId = intent.getStringExtra("documentId")
-        if (documentId != null) {
-            fetchNewsDetail(documentId)
+        documentId?.let {
+            fetchNewsDetail(it)
         }
 
+        // Inisialisasi gambar profil dan teks sambutan
         textView2 = findViewById(R.id.textView)
         profileImageView = findViewById(R.id.imageProfile)
         fetchProfileImage()
     }
 
+    // Fungsi untuk mengambil detail berita dari Firestore
     private fun fetchNewsDetail(documentId: String) {
         val db = FirebaseFirestore.getInstance()
         db.collection("news")
@@ -62,93 +68,110 @@ class NewsDetail : AppCompatActivity() {
             .addOnSuccessListener { document ->
                 if (document != null && document.exists()) {
                     val newsItem = document.toObject(NewsItem::class.java)
-                    if (newsItem != null) {
-                        textDetailHeadline.text = newsItem.Headline
-                        textDetailContent.text = formatContent(newsItem.Content)
-
-                        val formattedDate = newsItem.Timestamp?.let {
-                            SimpleDateFormat("dd MMMM yyyy", Locale("id", "ID")).format(it.toDate())
-                        } ?: "Invalid timestamp"
-                        textDetailTime.text = formattedDate
-
-                        // Load the image using Glide
-                        if (newsItem.Image.isNotEmpty()) {
-                            val storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(newsItem.Image)
-                            storageReference.downloadUrl.addOnSuccessListener { uri ->
-                                Glide.with(this)
-                                    .load(uri)
-                                    .override(850, 750)
-                                    .into(imageDetail)
-                            }.addOnFailureListener { e ->
-                                Log.e("FirebaseStorage", "Error fetching image", e)
-                            }
-                        }
-                    } else {
-                        textDetailHeadline.text = "No news available"
-                        textDetailContent.text = ""
-                        textDetailTime.text = "Unknown date"
+                    newsItem?.let {
+                        displayNewsDetails(it)
+                    } ?: run {
+                        displayNoNewsAvailable()
                     }
                 } else {
-                    textDetailHeadline.text = "No news available"
-                    textDetailContent.text = ""
-                    textDetailTime.text = "Unknown date"
+                    displayNoNewsAvailable()
                 }
             }
             .addOnFailureListener { e ->
-                textDetailHeadline.text = "Error fetching news"
-                textDetailContent.text = ""
-                textDetailTime.text = ""
-                Log.e("Firestore", "Error fetching news", e)
+                displayErrorFetchingNews(e)
             }
     }
 
+    // Fungsi untuk menampilkan detail berita pada UI
+    private fun displayNewsDetails(newsItem: NewsItem) {
+        textDetailHeadline.text = newsItem.Headline
+        textDetailContent.text = formatContent(newsItem.Content)
+
+        // Format timestamp ke tanggal yang dapat dibaca
+        val formattedDate = newsItem.Timestamp?.let {
+            SimpleDateFormat("dd MMMM yyyy", Locale("id", "ID")).format(it.toDate())
+        } ?: "Invalid timestamp"
+        textDetailTime.text = formattedDate
+
+        // Memuat gambar berita menggunakan Glide
+        if (newsItem.Image.isNotEmpty()) {
+            val storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(newsItem.Image)
+            storageReference.downloadUrl.addOnSuccessListener { uri ->
+                Glide.with(this)
+                    .load(uri)
+                    .override(850, 750)
+                    .into(imageDetail)
+            }.addOnFailureListener { e ->
+                Log.e("FirebaseStorage", "Error fetching image", e)
+            }
+        }
+    }
+
+    // Fungsi untuk menampilkan pesan ketika berita tidak tersedia
+    private fun displayNoNewsAvailable() {
+        textDetailHeadline.text = "Berita tidak tersedia"
+        textDetailContent.text = ""
+        textDetailTime.text = "Tanggal tidak diketahui"
+    }
+
+    // Fungsi untuk menangani kesalahan saat mengambil berita
+    private fun displayErrorFetchingNews(e: Exception) {
+        textDetailHeadline.text = "Gagal mengambil berita"
+        textDetailContent.text = ""
+        textDetailTime.text = ""
+        Log.e("Firestore", "Error fetching news", e)
+    }
+
+    // Fungsi untuk mengambil gambar profil dari Firestore
     private fun fetchProfileImage() {
         val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser != null) {
-            val userId = currentUser.uid
+        currentUser?.let {
+            val userId = it.uid
             val db = FirebaseFirestore.getInstance()
 
             db.collection("users").document(userId).get()
                 .addOnSuccessListener { document ->
                     if (document != null && document.exists()) {
                         val profileImage = document.getString("profileImage")
-                        if (profileImage != null && profileImage.isNotEmpty()) {
+                        // Memuat gambar profil menggunakan Picasso
+                        if (!profileImage.isNullOrEmpty()) {
                             Picasso.get().load(profileImage).into(profileImageView)
                         } else {
                             profileImageView.setImageResource(R.drawable.baseline_person_24)
                         }
 
+                        // Mengatur teks sambutan dengan nama pengguna
                         val userName = document.getString("name")
-                        if (userName != null && userName.isNotEmpty()) {
-                            textView2.text = "Welcome $userName"
+                        textView2.text = if (!userName.isNullOrEmpty()) {
+                            "Selamat datang $userName"
                         } else {
-                            textView2.text = "Welcome Guest"
+                            "Selamat datang guest"
                         }
                     }
                 }
                 .addOnFailureListener { exception ->
-                    Toast.makeText(this, "Failed to fetch profile image: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Gagal mengambil gambar profil: ${exception.message}", Toast.LENGTH_SHORT).show()
                     Log.e("Firestore", "Error fetching profile image", exception)
-                    textView2.text = "Welcome Guest"
+                    textView2.text = "Selamat datang guest"
                 }
-        } else {
+        } ?: run {
             profileImageView.setImageResource(R.drawable.baseline_person_24)
-            textView2.text = "Welcome Guest"
+            textView2.text = "Selamat datang guest"
         }
     }
 
+    // Fungsi untuk memformat konten berita agar lebih mudah dibaca
     private fun formatContent(content: String): String {
         val sentences = content.split(". ")
         val stringBuilder = StringBuilder()
         var sentenceCount = 0
 
         for (sentence in sentences) {
+            // Menambahkan baris baru setiap 5 kalimat untuk keterbacaan
             if (sentenceCount % 5 == 0 && sentenceCount != 0) {
                 stringBuilder.append(".\n\n")
-            } else {
-                if (sentenceCount != 0) {
-                    stringBuilder.append(". ")
-                }
+            } else if (sentenceCount != 0) {
+                stringBuilder.append(". ")
             }
             stringBuilder.append(sentence.trim())
             sentenceCount++

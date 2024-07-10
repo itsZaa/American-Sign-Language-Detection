@@ -38,6 +38,7 @@ class Profile : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_profile)
 
+        // Inisialisasi komponen UI
         imageView = findViewById(R.id.imagePhoto)
         button = findViewById(R.id.cameraButton)
         nameProfile = findViewById(R.id.NameProfile)
@@ -45,24 +46,29 @@ class Profile : AppCompatActivity() {
         emailProfile = findViewById(R.id.emailProfile)
         buttonLogout = findViewById(R.id.buttonLogout)
 
+        // Listener untuk tombol ambil gambar
         button.setOnClickListener {
             pickImage()
         }
 
+        // Listener untuk tombol logout
         buttonLogout.setOnClickListener {
             logout()
         }
 
+        // Memuat data profil pengguna
         fetchProfileData()
     }
 
+    // Fungsi untuk memilih gambar dari galeri menggunakan ImagePicker library
     private fun pickImage() {
         ImagePicker.with(this)
             .galleryOnly()
-            .crop()  // Optional cropping
+            .crop()  // Opsional, untuk memotong gambar
             .start(IMAGE_REQUEST_CODE)
     }
 
+    // Handle hasil dari pemilihan gambar dari galeri
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == IMAGE_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
@@ -74,6 +80,7 @@ class Profile : AppCompatActivity() {
         }
     }
 
+    // Fungsi untuk mengunggah gambar ke Firebase Storage
     private fun uploadImageToFirebase(uri: Uri) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
@@ -87,12 +94,13 @@ class Profile : AppCompatActivity() {
                     }
                 }
                 .addOnFailureListener { exception ->
-                    Toast.makeText(this, "Failed to upload image: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Gagal mengunggah gambar: ${exception.message}", Toast.LENGTH_SHORT).show()
                     Log.e("FirebaseStorage", "Error uploading image", exception)
                 }
         }
     }
 
+    // Fungsi untuk memperbarui URL gambar profil di Firestore
     private fun updateProfileImage(imageUrl: String) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
@@ -102,15 +110,16 @@ class Profile : AppCompatActivity() {
             db.collection("users").document(userId)
                 .update("profileImage", imageUrl)
                 .addOnSuccessListener {
-                    Toast.makeText(this, "Profile image updated", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Gambar profil diperbarui", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener { exception ->
-                    Toast.makeText(this, "Failed to update profile image: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Gagal memperbarui gambar profil: ${exception.message}", Toast.LENGTH_SHORT).show()
                     Log.e("Firestore", "Error updating profile image", exception)
                 }
         }
     }
 
+    // Fungsi untuk mengambil data profil pengguna dari Firestore
     private fun fetchProfileData() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
@@ -128,43 +137,46 @@ class Profile : AppCompatActivity() {
 
                         nameProfile.text = name
                         phoneProfile.text = phone
+                        // Memuat gambar profil menggunakan Glide jika tersedia
                         if (profileImage != null && profileImage.isNotEmpty()) {
                             Glide.with(this)
                                 .load(profileImage)
                                 .into(imageView)
                         }
                     } else {
-                        Toast.makeText(this, "Document does not exist", Toast.LENGTH_SHORT).show()
-                        Log.e("Firestore", "No such document")
+                        Toast.makeText(this, "Dokumen tidak ditemukan", Toast.LENGTH_SHORT).show()
+                        Log.e("Firestore", "Dokumen tidak ditemukan")
                     }
                 }
                 .addOnFailureListener { exception ->
-                    Toast.makeText(this, "Failed to fetch profile data: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Gagal mengambil data profil: ${exception.message}", Toast.LENGTH_SHORT).show()
                     Log.e("Firestore", "Error fetching profile data", exception)
                 }
         } else {
-            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Pengguna belum login", Toast.LENGTH_SHORT).show()
         }
     }
 
+    // Fungsi untuk pindah ke halaman EditProfile
     fun moveToEditProfile(view: View) {
         val intent = Intent(this, EditProfile::class.java)
         startActivity(intent)
     }
 
+    // Fungsi untuk proses logout pengguna
     private fun logout() {
         val builder = AlertDialog.Builder(this, R.style.CustomAlertDialogTheme)
         builder.setTitle("Logout")
-        builder.setMessage("Are you sure you want to logout?")
-        builder.setPositiveButton("Yes") { dialog, which ->
+        builder.setMessage("Apakah Anda yakin ingin logout?")
+        builder.setPositiveButton("Ya") { dialog, which ->
             FirebaseAuth.getInstance().signOut()
-            Toast.makeText(this, "Logout successful", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Logout berhasil", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, Home::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
         }
-        builder.setNegativeButton("No") { dialog, which ->
+        builder.setNegativeButton("Tidak") { dialog, which ->
             dialog.dismiss()
         }
         val dialog = builder.create()
