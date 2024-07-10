@@ -13,22 +13,31 @@ import com.example.tubesrpll.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
+/**
+ * Aktivity untuk mengelola fitur lupa kata sandi.
+ */
 class ForgotPassword : AppCompatActivity() {
 
-    private lateinit var emailEt: EditText
-    private lateinit var resetPassword: Button
-    private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var emailEt: EditText // EditText untuk input email
+    private lateinit var resetPassword: Button // Button untuk reset password
+    private lateinit var firebaseAuth: FirebaseAuth // Instance FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_forgot_password)
 
+        // Inisialisasi FirebaseAuth
         firebaseAuth = FirebaseAuth.getInstance()
+
+        // Mendapatkan referensi ke komponen UI
         emailEt = findViewById(R.id.textInputEditText)
         resetPassword = findViewById(R.id.button6)
+
+        // Menangani klik tombol reset password
         resetPassword.setOnClickListener {
             val email = emailEt.text.toString()
             if (email.isNotEmpty()) {
+                // Mengirim email reset password
                 firebaseAuth.sendPasswordResetEmail(email)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {

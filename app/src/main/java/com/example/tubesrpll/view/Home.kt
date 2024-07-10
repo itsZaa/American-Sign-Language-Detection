@@ -26,6 +26,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.toObject
 
+/**
+ * Aktivity untuk menampilkan home page.
+ */
 class Home : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
@@ -39,8 +42,11 @@ class Home : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_home)
+
+        // Inisialisasi FirebaseAuth
         auth = FirebaseAuth.getInstance()
 
+        // Inisialisasi RecyclerView
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         adapter = NewsAdapter(newsList)
@@ -49,11 +55,10 @@ class Home : AppCompatActivity() {
         textView2 = findViewById(R.id.textView)
         profileImageView = findViewById(R.id.imageProfile) // Ensure you have this ImageView in your layout
 
+        // Menyiapkan teks klik untuk "View All News"
         val textViewAllNews = findViewById<TextView>(R.id.textViewAllNews)
-
         val text = "View All News"
         val spannableString = SpannableString(text)
-
         val clickableSpan = object : ClickableSpan() {
             override fun onClick(widget: View) {
                 val intent = Intent(this@Home, AllNews::class.java)
@@ -75,6 +80,7 @@ class Home : AppCompatActivity() {
         textViewAllNews.text = spannableString
         textViewAllNews.movementMethod = LinkMovementMethod.getInstance()
 
+        // Mengambil berita utama dan gambar profil
         getMainNews()
         fetchProfileImage()
     }
@@ -84,6 +90,9 @@ class Home : AppCompatActivity() {
         fetchProfileImage()
     }
 
+    /**
+     * Mengambil gambar profil pengguna dari Firestore.
+     */
     private fun fetchProfileImage() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
@@ -119,6 +128,9 @@ class Home : AppCompatActivity() {
         }
     }
 
+    /**
+     * Mengambil berita utama dari Firestore.
+     */
     private fun getMainNews() {
         val db = FirebaseFirestore.getInstance()
         db.collection("news")
@@ -140,7 +152,9 @@ class Home : AppCompatActivity() {
             }
     }
 
-
+    /**
+     * Pindah ke aktivitas TranslateVideoASLToText jika pengguna sudah login.
+     */
     fun moveToVideoASLToText(view: View) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
@@ -176,6 +190,9 @@ class Home : AppCompatActivity() {
         }
     }
 
+    /**
+     * Pindah ke aktivitas TranslateVideoBISINDOToText jika pengguna sudah login.
+     */
     fun moveToVideoBISINDOToText(view: View) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
@@ -211,6 +228,9 @@ class Home : AppCompatActivity() {
         }
     }
 
+    /**
+     * Pindah ke aktivitas TranslateTextToASL jika pengguna sudah login.
+     */
     fun moveToTextToASL(view: View) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
@@ -247,6 +267,9 @@ class Home : AppCompatActivity() {
         }
     }
 
+    /**
+     * Pindah ke aktivitas TranslateTextToBISINDO jika pengguna sudah login.
+     */
     fun moveToTextToBISINDO(view: View) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
@@ -282,6 +305,10 @@ class Home : AppCompatActivity() {
             alert.show()
         }
     }
+
+    /**
+     * Pindah ke halaman profil jika pengguna sudah login, atau ke halaman SignIn jika belum login.
+     */
     fun moveToSignIn(view: View) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {

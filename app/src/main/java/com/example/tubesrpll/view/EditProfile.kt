@@ -10,18 +10,26 @@ import com.example.tubesrpll.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
+/**
+ * Aktivitas untuk mengedit profil pengguna.
+ */
 class EditProfile : AppCompatActivity() {
 
-    private lateinit var db: FirebaseFirestore
-    private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore // Instance Firestore
+    private lateinit var auth: FirebaseAuth // Instance FirebaseAuth
 
+    /**
+     * Metode yang dipanggil saat aktivitas dibuat.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_profile)
 
+        // Inisialisasi Firestore dan FirebaseAuth
         db = FirebaseFirestore.getInstance()
         auth = FirebaseAuth.getInstance()
 
+        // Mendapatkan referensi ke komponen UI
         val nameInput = findViewById<EditText>(R.id.textInputEditNama)
         val radioGroupGender = findViewById<RadioGroup>(R.id.radioGroupGender)
         val phoneInput = findViewById<EditText>(R.id.textInputEditPhone)
@@ -30,9 +38,11 @@ class EditProfile : AppCompatActivity() {
 
         val currentUser = auth.currentUser
         if (currentUser != null) {
+            // Memuat data pengguna dari Firestore
             db.collection("users").document(currentUser.uid).get()
                 .addOnSuccessListener { document ->
                     if (document != null) {
+                        // Mengisi field dengan data yang ada
                         val name = document.getString("name")
                         nameInput.setText(name)
 
@@ -54,6 +64,7 @@ class EditProfile : AppCompatActivity() {
                 }
         }
 
+        // Menangani klik tombol simpan
         saveButton.setOnClickListener {
             val name = nameInput.text.toString()
             val selectedGenderId = radioGroupGender.checkedRadioButtonId
@@ -61,15 +72,20 @@ class EditProfile : AppCompatActivity() {
             val phone = phoneInput.text.toString()
             val address = addressInput.text.toString()
 
+            // Validasi input
             if (name.isEmpty() || phone.isEmpty() || address.isEmpty() || gender.isEmpty()) {
                 Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
+            // Memperbarui profil pengguna
             updateProfile(currentUser?.uid, name, gender, phone, address)
         }
     }
 
+    /**
+     * Metode untuk memperbarui profil pengguna di Firestore.
+     */
     private fun updateProfile(userId: String?, name: String, gender: String, phone: String, address: String) {
         userId?.let {
             db.collection("users").document(it).update(

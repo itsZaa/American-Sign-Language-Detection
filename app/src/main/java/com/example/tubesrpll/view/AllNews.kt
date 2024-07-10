@@ -19,52 +19,71 @@ import com.google.firebase.ktx.Firebase
 import com.squareup.picasso.Picasso
 
 
+/**
+ * Aktivity untuk menampilkan semua berita.
+ */
 class AllNews : AppCompatActivity() {
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: NewsAdapter
-    private val newsList = mutableListOf<NewsItem>()
-    private lateinit var profileImageView: ImageView
-    private lateinit var textViewNews: TextView
+    private lateinit var recyclerView: RecyclerView // RecyclerView untuk menampilkan daftar berita
+    private lateinit var adapter: NewsAdapter // Adapter untuk RecyclerView
+    private val newsList = mutableListOf<NewsItem>() //Daftar Berita
+    private lateinit var profileImageView: ImageView //ImageView untuk Gambar Profile Pengguna
+    private lateinit var textViewNews: TextView //TextView untuk menampilkan teks
 
 
+    /**
+     * Metode yang dipanggil saat aktivitas dibuat.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_all_news)
 
+        // Inisialisasi RecyclerView
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         adapter = NewsAdapter(newsList)
         recyclerView.adapter = adapter
 
+        // Memuat berita dari Firebase
         fetchAllNews()
 
+        // Inisialisasi TextView dan ImageView
         textViewNews = findViewById(R.id.textView)
         profileImageView = findViewById(R.id.imageProfileASL)
         fetchProfileImage()
     }
 
+    /**
+     * Metode untuk memuat semua berita dari Firestore.
+     */
     private fun fetchAllNews() {
         val db = Firebase.firestore
         db.collection("news")
             .get()
             .addOnSuccessListener { result ->
                 for (document in result) {
+                    // Mengonversi dokumen Firestore menjadi objek NewsItem
                     val newsItem = document.toObject<NewsItem>().copy(id = document.id)
                     newsList.add(newsItem)
                 }
-                adapter.notifyDataSetChanged()
+                adapter.notifyDataSetChanged() // Memberitahu adapter bahwa data telah berubah
             }
             .addOnFailureListener { exception ->
                 Log.w("AllNewsActivity", "Error getting documents.", exception)
             }
     }
 
+    /**
+     * Metode yang dipanggil saat aktivitas dilanjutkan.
+     */
     override fun onResume() {
         super.onResume()
-        fetchProfileImage()
+        fetchProfileImage() // Memuat ulang gambar profil saat aktivitas dilanjutkan
     }
 
+    /**
+     * Metode untuk memuat gambar profil pengguna dari Firestore.
+     */
     private fun fetchProfileImage() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
@@ -74,6 +93,7 @@ class AllNews : AppCompatActivity() {
             db.collection("users").document(userId).get()
                 .addOnSuccessListener { document ->
                     if (document != null && document.exists()) {
+                        // Memuat gambar profil dari URL
                         val profileImage = document.getString("profileImage")
                         if (profileImage != null && profileImage.isNotEmpty()) {
                             Picasso.get().load(profileImage).into(profileImageView)
@@ -81,6 +101,7 @@ class AllNews : AppCompatActivity() {
                             profileImageView.setImageResource(R.drawable.baseline_person_24)
                         }
 
+                        // Menampilkan nama pengguna atau sambutan default
                         val userName = document.getString("name")
                         if (userName != null && userName.isNotEmpty()) {
                             textViewNews.text = "Welcome $userName"

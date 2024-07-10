@@ -20,8 +20,12 @@ import com.google.firebase.storage.FirebaseStorage
 import com.bumptech.glide.Glide
 import com.example.tubesrpll.R
 
+/**
+ * Aktivitas untuk menampilkan profile
+ */
 class Profile : AppCompatActivity() {
 
+    // Deklarasi variabel UI
     private lateinit var imageView: ImageView
     private lateinit var button: FloatingActionButton
     private lateinit var nameProfile: TextView
@@ -38,6 +42,7 @@ class Profile : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_profile)
 
+        // Inisialisasi variabel UI
         imageView = findViewById(R.id.imagePhoto)
         button = findViewById(R.id.cameraButton)
         nameProfile = findViewById(R.id.NameProfile)
@@ -45,17 +50,21 @@ class Profile : AppCompatActivity() {
         emailProfile = findViewById(R.id.emailProfile)
         buttonLogout = findViewById(R.id.buttonLogout)
 
+        // Set listener untuk tombol kamera
         button.setOnClickListener {
             pickImage()
         }
 
+        // Set listener untuk tombol logout
         buttonLogout.setOnClickListener {
             logout()
         }
 
+        // Ambil data profil dari Firestore
         fetchProfileData()
     }
 
+    // Fungsi untuk memilih gambar dari galeri
     private fun pickImage() {
         ImagePicker.with(this)
             .galleryOnly()
@@ -74,6 +83,7 @@ class Profile : AppCompatActivity() {
         }
     }
 
+    // Fungsi untuk mengunggah gambar ke Firebase Storage
     private fun uploadImageToFirebase(uri: Uri) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
@@ -93,6 +103,7 @@ class Profile : AppCompatActivity() {
         }
     }
 
+    // Fungsi untuk memperbarui URL gambar profil di Firestore
     private fun updateProfileImage(imageUrl: String) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
@@ -111,6 +122,7 @@ class Profile : AppCompatActivity() {
         }
     }
 
+    // Fungsi untuk mengambil data profil dari Firestore
     private fun fetchProfileData() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
@@ -147,11 +159,13 @@ class Profile : AppCompatActivity() {
         }
     }
 
+    // Fungsi untuk pindah ke halaman Edit Profile
     fun moveToEditProfile(view: View) {
         val intent = Intent(this, EditProfile::class.java)
         startActivity(intent)
     }
 
+    // Fungsi untuk logout
     private fun logout() {
         val builder = AlertDialog.Builder(this, R.style.CustomAlertDialogTheme)
         builder.setTitle("Logout")

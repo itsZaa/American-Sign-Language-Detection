@@ -19,8 +19,12 @@ import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Aktivitas untuk menampilkan detail berita.
+ */
 class NewsDetail : AppCompatActivity() {
 
+    // Deklarasi variabel untuk elemen UI
     private lateinit var profileImageView: ImageView
     private lateinit var textView2: TextView
     private lateinit var textDetailHeadline: TextView
@@ -33,27 +37,35 @@ class NewsDetail : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_news_detail)
 
+        // Inisialisasi elemen UI
         textDetailHeadline = findViewById(R.id.textDetailHeadline)
         textDetailTime = findViewById(R.id.textDetailTime)
         textDetailContent = findViewById(R.id.textDetailContent)
         imageDetail = findViewById(R.id.imageView2)
 
+        // Menambahkan padding untuk menghindari sistem bar
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
+        // Mengambil documentId dari intent dan memuat detail berita
         val documentId = intent.getStringExtra("documentId")
         if (documentId != null) {
             fetchNewsDetail(documentId)
         }
 
+        // Menampilkan profil pengguna
         textView2 = findViewById(R.id.textView)
         profileImageView = findViewById(R.id.imageProfile)
         fetchProfileImage()
     }
 
+    /**
+     * Memuat detail berita dari Firestore.
+     * @param documentId ID dokumen berita.
+     */
     private fun fetchNewsDetail(documentId: String) {
         val db = FirebaseFirestore.getInstance()
         db.collection("news")
@@ -63,15 +75,17 @@ class NewsDetail : AppCompatActivity() {
                 if (document != null && document.exists()) {
                     val newsItem = document.toObject(NewsItem::class.java)
                     if (newsItem != null) {
+                        // Menampilkan detail berita
                         textDetailHeadline.text = newsItem.Headline
                         textDetailContent.text = formatContent(newsItem.Content)
 
+                        // Memformat tanggal
                         val formattedDate = newsItem.Timestamp?.let {
                             SimpleDateFormat("dd MMMM yyyy", Locale("id", "ID")).format(it.toDate())
                         } ?: "Invalid timestamp"
                         textDetailTime.text = formattedDate
 
-                        // Load the image using Glide
+                        // Memuat gambar berita menggunakan Glide
                         if (newsItem.Image.isNotEmpty()) {
                             val storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(newsItem.Image)
                             storageReference.downloadUrl.addOnSuccessListener { uri ->
@@ -84,17 +98,20 @@ class NewsDetail : AppCompatActivity() {
                             }
                         }
                     } else {
+                        // Jika berita tidak ditemukan
                         textDetailHeadline.text = "No news available"
                         textDetailContent.text = ""
                         textDetailTime.text = "Unknown date"
                     }
                 } else {
+                    // Jika dokumen berita tidak ditemukan
                     textDetailHeadline.text = "No news available"
                     textDetailContent.text = ""
                     textDetailTime.text = "Unknown date"
                 }
             }
             .addOnFailureListener { e ->
+                // Jika gagal memuat berita
                 textDetailHeadline.text = "Error fetching news"
                 textDetailContent.text = ""
                 textDetailTime.text = ""
@@ -102,6 +119,9 @@ class NewsDetail : AppCompatActivity() {
             }
     }
 
+    /**
+     * Memuat gambar profil pengguna dari Firestore.
+     */
     private fun fetchProfileImage() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
@@ -137,6 +157,11 @@ class NewsDetail : AppCompatActivity() {
         }
     }
 
+    /**
+     * Memformat konten berita untuk ditampilkan dengan baik.
+     * @param content Konten berita asli.
+     * @return Konten berita yang diformat.
+     */
     private fun formatContent(content: String): String {
         val sentences = content.split(". ")
         val stringBuilder = StringBuilder()

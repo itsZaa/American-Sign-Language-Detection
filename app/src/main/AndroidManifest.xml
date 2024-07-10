@@ -2,12 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permission yang diperlukan oleh aplikasi -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-
+    <!-- Menyatakan bahwa aplikasi menggunakan fitur kamera -->
     <uses-feature android:name="android.hardware.camera" />
 
     <application
@@ -20,6 +21,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TubesRPLL"
         tools:targetApi="31">
+
+        <!-- Aktivity yang ada dalam aplikasi -->
         <activity
             android:name=".view.ForgotPassword"
             android:exported="false" />
@@ -56,6 +59,8 @@
         <activity
             android:name=".view.Home"
             android:exported="false" />
+
+        <!-- Aktivity utama yang akan diluncurkan pertama kali saat aplikasi dibuka -->
         <activity
             android:name=".view.loadingPage"
             android:exported="true">
@@ -66,6 +71,7 @@
             </intent-filter>
         </activity>
 
+        <!-- Metadata untuk font yang dimuat sebelumnya -->
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
