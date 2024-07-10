@@ -29,10 +29,8 @@ class TranslateTextToASL : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_translate_text_to_asl)
 
-        // Inisialisasi Firebase Storage Reference
         storageReference = FirebaseStorage.getInstance().reference
 
-        // Inisialisasi elemen UI dan adapter RecyclerView
         val textASL = findViewById<EditText>(R.id.textInputEditTextASL)
         val buttonASL = findViewById<Button>(R.id.buttonResultASL)
         val recyclerViewASL = findViewById<RecyclerView>(R.id.recyclerViewASL)
@@ -41,7 +39,6 @@ class TranslateTextToASL : AppCompatActivity() {
         recyclerViewASL.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         recyclerViewASL.adapter = aslImageAdapter
 
-        // Set onClickListener untuk tombol hasil ASL
         buttonASL.setOnClickListener {
             val inputText = textASL.text.toString()
             if (inputText.isNotEmpty()) {
@@ -49,7 +46,6 @@ class TranslateTextToASL : AppCompatActivity() {
             }
         }
 
-        // Inisialisasi elemen UI untuk profil pengguna
         textViewASL = findViewById(R.id.textView)
         profileImageView = findViewById(R.id.imageProfileASL)
         fetchProfileImage()
@@ -57,11 +53,9 @@ class TranslateTextToASL : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Memanggil kembali fungsi untuk mengambil gambar profil saat activity di-resume
         fetchProfileImage()
     }
 
-    // Method untuk mengambil gambar profil pengguna dari Firestore
     private fun fetchProfileImage() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
@@ -73,37 +67,30 @@ class TranslateTextToASL : AppCompatActivity() {
                     if (document != null && document.exists()) {
                         val profileImage = document.getString("profileImage")
                         if (profileImage != null && profileImage.isNotEmpty()) {
-                            // Load gambar profil menggunakan Picasso jika tersedia
                             Picasso.get().load(profileImage).into(profileImageView)
                         } else {
-                            // Set default gambar profil jika tidak ada
                             profileImageView.setImageResource(R.drawable.baseline_person_24)
                         }
 
                         val userName = document.getString("name")
                         if (userName != null && userName.isNotEmpty()) {
-                            // Tampilkan nama pengguna jika tersedia
-                            textViewASL.text = "Welcome, $userName"
+                            textViewASL.text = "Welcome $userName"
                         } else {
-                            // Tampilkan sebagai tamu jika nama tidak tersedia
-                            textViewASL.text = "Welcome, Guest"
+                            textViewASL.text = "Welcome Guest"
                         }
                     }
                 }
                 .addOnFailureListener { exception ->
-                    // Tangani jika terjadi kesalahan dalam mengambil gambar profil
-                    Toast.makeText(this, "Gagal mengambil gambar profil: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Failed to fetch profile image: ${exception.message}", Toast.LENGTH_SHORT).show()
                     Log.e("Firestore", "Error fetching profile image", exception)
-                    textViewASL.text = "Welcome, Guest"
+                    textViewASL.text = "Welcome Guest"
                 }
         } else {
-            // Set default gambar profil dan teks selamat datang untuk tamu
             profileImageView.setImageResource(R.drawable.baseline_person_24)
-            textViewASL.text = "Welcome, Guest"
+            textViewASL.text = "Welcome Guest"
         }
     }
 
-    // Method untuk memperbarui daftar gambar ASL berdasarkan teks input
     private fun updateASLImages(text: String) {
         val imageList = mutableListOf<StorageReference>()
         val charArray = text.toCharArray()
@@ -115,14 +102,12 @@ class TranslateTextToASL : AppCompatActivity() {
                 val imageRef = storageReference.child(fileName)
                 imageList.add(imageRef)
             } else if (char.isLetter()) {
-                // Jika karakter adalah huruf, ambil gambar ASL sesuai dengan karakter
                 val fileName = "ASL image/${char.lowercaseChar()}.png"
                 val imageRef = storageReference.child(fileName)
                 imageList.add(imageRef)
             }
         }
 
-        // Update adapter RecyclerView dengan daftar gambar ASL baru
         aslImageAdapter.updateImageList(imageList)
     }
 }

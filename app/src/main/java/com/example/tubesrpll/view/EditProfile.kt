@@ -15,30 +15,24 @@ class EditProfile : AppCompatActivity() {
     private lateinit var db: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
 
-    // Fungsi ini dipanggil saat activity dibuat
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_profile)
 
-        // Inisialisasi Firestore dan FirebaseAuth
         db = FirebaseFirestore.getInstance()
         auth = FirebaseAuth.getInstance()
 
-        // Inisialisasi UI components
         val nameInput = findViewById<EditText>(R.id.textInputEditNama)
         val radioGroupGender = findViewById<RadioGroup>(R.id.radioGroupGender)
         val phoneInput = findViewById<EditText>(R.id.textInputEditPhone)
         val addressInput = findViewById<EditText>(R.id.textInputEditAddress)
         val saveButton = findViewById<Button>(R.id.buttonSave)
 
-        // Mendapatkan user saat ini dari FirebaseAuth
         val currentUser = auth.currentUser
         if (currentUser != null) {
-            // Mengambil data pengguna dari Firestore
             db.collection("users").document(currentUser.uid).get()
                 .addOnSuccessListener { document ->
                     if (document != null) {
-                        // Mengisi UI dengan data pengguna yang diambil
                         val name = document.getString("name")
                         nameInput.setText(name)
 
@@ -60,7 +54,6 @@ class EditProfile : AppCompatActivity() {
                 }
         }
 
-        // Menyimpan perubahan data pengguna saat tombol save diklik
         saveButton.setOnClickListener {
             val name = nameInput.text.toString()
             val selectedGenderId = radioGroupGender.checkedRadioButtonId
@@ -68,18 +61,15 @@ class EditProfile : AppCompatActivity() {
             val phone = phoneInput.text.toString()
             val address = addressInput.text.toString()
 
-            // Validasi input pengguna
             if (name.isEmpty() || phone.isEmpty() || address.isEmpty() || gender.isEmpty()) {
                 Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Memperbarui profil pengguna di Firestore
             updateProfile(currentUser?.uid, name, gender, phone, address)
         }
     }
 
-    // Fungsi untuk memperbarui profil pengguna di Firestore
     private fun updateProfile(userId: String?, name: String, gender: String, phone: String, address: String) {
         userId?.let {
             db.collection("users").document(it).update(

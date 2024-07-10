@@ -230,7 +230,8 @@ class TranslateVideoToText : AppCompatActivity() {
         Log.d("FrameProcessing", "Starting frame processing")
         scheduler = Executors.newScheduledThreadPool(1)
         scheduler.scheduleAtFixedRate({
-        }, 0, 100, TimeUnit.MILLISECONDS)
+            // Frame processing is handled by ImageReader.OnImageAvailableListener
+        }, 0, 100, TimeUnit.MILLISECONDS) // Adjust the interval as needed
     }
 
     private val onImageAvailableListener = ImageReader.OnImageAvailableListener { reader ->
