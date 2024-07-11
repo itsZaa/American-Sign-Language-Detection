@@ -1,0 +1,5 @@
+com.firebase.ui.storage.BuildConfig
+com.firebase.ui.storage.images.FirebaseImageLoader
+com.firebase.ui.storage.images.FirebaseImageLoader$Factory
+com.firebase.ui.storage.images.FirebaseImageLoader$FirebaseStorageFetcher
+com.firebase.ui.storage.images.FirebaseImageLoader$FirebaseStorageKey

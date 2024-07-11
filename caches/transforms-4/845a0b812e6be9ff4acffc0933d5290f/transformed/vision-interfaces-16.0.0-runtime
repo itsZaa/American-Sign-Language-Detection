@@ -1,0 +1,2 @@
+com.google.mlkit.vision.interfaces.Detector
+com.google.mlkit.vision.interfaces.Detector$DetectorType

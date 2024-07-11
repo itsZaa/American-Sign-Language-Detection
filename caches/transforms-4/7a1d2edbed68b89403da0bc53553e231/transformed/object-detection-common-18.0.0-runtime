@@ -1,0 +1,8 @@
+com.google.mlkit.vision.objects.DetectedObject
+com.google.mlkit.vision.objects.DetectedObject$Label
+com.google.mlkit.vision.objects.ObjectDetection
+com.google.mlkit.vision.objects.ObjectDetector
+com.google.mlkit.vision.objects.ObjectDetectorOptionsBase
+com.google.mlkit.vision.objects.ObjectDetectorOptionsBase$Builder
+com.google.mlkit.vision.objects.ObjectDetectorOptionsBase$DetectorMode
+com.google.mlkit.vision.objects.internal.ObjectDetectorImpl
