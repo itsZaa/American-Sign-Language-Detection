@@ -50,6 +50,7 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
 class TranslateVideoBISINDOToText : AppCompatActivity() {
+    // Deklarasi variabel
     private lateinit var textureView: TextureView
     private lateinit var imageViewResult: ImageView
 
@@ -69,6 +70,7 @@ class TranslateVideoBISINDOToText : AppCompatActivity() {
     private lateinit var firebaseStorage: FirebaseStorage
     private lateinit var storageRef: StorageReference
 
+    // Metode onCreate dijalankan saat aktivitas dibuat
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -79,6 +81,7 @@ class TranslateVideoBISINDOToText : AppCompatActivity() {
             insets
         }
 
+        // Memeriksa izin kamera
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
                 this,
@@ -90,6 +93,7 @@ class TranslateVideoBISINDOToText : AppCompatActivity() {
         }
     }
 
+    // Memproses hasil permintaan izin
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PackageManager.PERMISSION_GRANTED && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -99,25 +103,27 @@ class TranslateVideoBISINDOToText : AppCompatActivity() {
         }
     }
 
+    // Inisialisasi komponen
     private fun initializeComponents() {
         textureView = findViewById(R.id.textureView)
         imageViewResult = findViewById(R.id.imageViewResult)
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
-        // Load your TFLite model
+        // Memuat model TFLite
         tflite = Interpreter(loadModelFile("ASL_model.tflite"))
         Log.d("ModelLoading", "Model successfully loaded")
 
-        // Load labels
+        // Memuat label
         labels = loadLabels()
         Log.d("ModelLoading", "Labels successfully loaded")
 
-        // Initialize Firebase Storage
+        // Inisialisasi Firebase Storage
         firebaseStorage = FirebaseStorage.getInstance()
 
         startCamera()
     }
 
+    // Memuat file model
     private fun loadModelFile(modelFilename: String): MappedByteBuffer {
         val fileDescriptor = assets.openFd(modelFilename)
         val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
@@ -127,6 +133,7 @@ class TranslateVideoBISINDOToText : AppCompatActivity() {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
 
+    // Memuat label dari file
     private fun loadLabels(): List<String> {
         val labels = mutableListOf<String>()
         try {
@@ -139,6 +146,7 @@ class TranslateVideoBISINDOToText : AppCompatActivity() {
         return labels
     }
 
+    // Callback untuk status kamera
     private val stateCallback = object : CameraDevice.StateCallback() {
         @RequiresApi(Build.VERSION_CODES.P)
         override fun onOpened(cameraDevice: CameraDevice) {
@@ -205,6 +213,7 @@ class TranslateVideoBISINDOToText : AppCompatActivity() {
         }
     }
 
+    // Memulai kamera
     private fun startCamera() {
         try {
             stringCameraID = if (isFrontCamera) {
@@ -231,13 +240,15 @@ class TranslateVideoBISINDOToText : AppCompatActivity() {
         }
     }
 
+    // Memulai pemrosesan frame
     private fun startFrameProcessing() {
         scheduler = Executors.newScheduledThreadPool(1)
         scheduler.scheduleAtFixedRate({
-            // Frame processing is handled by ImageReader.OnImageAvailableListener
+            // Pemrosesan frame ditangani oleh ImageReader.OnImageAvailableListener
         }, 0, 100, TimeUnit.MILLISECONDS)
     }
 
+    // Listener untuk gambar yang tersedia
     private val onImageAvailableListener = ImageReader.OnImageAvailableListener { reader ->
         val image = reader.acquireLatestImage() ?: return@OnImageAvailableListener
         val inputBuffer = convertImageToByteBuffer(image)
@@ -269,6 +280,7 @@ class TranslateVideoBISINDOToText : AppCompatActivity() {
         }
     }
 
+    // Konversi gambar menjadi ByteBuffer
     private fun convertImageToByteBuffer(image: Image): ByteBuffer {
         val inputImageWidth = 50
         val inputImageHeight = 50
@@ -309,6 +321,7 @@ class TranslateVideoBISINDOToText : AppCompatActivity() {
         return inputBuffer
     }
 
+    // Memuat gambar dari Firebase berdasarkan label
     private fun loadImageFromFirebase(label: String) {
         val imageRef = firebaseStorage.getReference("BISINDO image/${label.lowercase()}.png")
 
@@ -326,8 +339,7 @@ class TranslateVideoBISINDOToText : AppCompatActivity() {
         }
     }
 
-
-
+    // Fungsi untuk mengganti kamera
     fun switchCamera(view: View) {
         isFrontCamera = !isFrontCamera
         myCameraCaptureSession?.close()
@@ -335,22 +347,24 @@ class TranslateVideoBISINDOToText : AppCompatActivity() {
         startCamera()
     }
 
+    // Metode onPause untuk menghentikan kamera saat aktivitas dijeda
     override fun onPause() {
         super.onPause()
-        stopCamera() // Stop camera preview and release resources
-        // Stop any ongoing Glide operations if imageViewResult is initialized
+        stopCamera() // Hentikan pratinjau kamera dan lepaskan sumber daya
+        // Hentikan operasi Glide jika imageViewResult diinisialisasi
         if (::imageViewResult.isInitialized) {
             Glide.with(this).clear(imageViewResult)
         }
     }
 
-
+    // Metode onDestroy untuk melepaskan sumber daya saat aktivitas dihancurkan
     override fun onDestroy() {
         super.onDestroy()
-        // Release any remaining resources, such as camera device
+        // Lepaskan sumber daya yang tersisa, seperti perangkat kamera
         closeCamera()
     }
 
+    // Menghentikan kamera
     private fun stopCamera() {
         try {
             myCameraCaptureSession?.abortCaptures()
@@ -363,9 +377,10 @@ class TranslateVideoBISINDOToText : AppCompatActivity() {
         }
     }
 
+    // Menutup kamera
     private fun closeCamera() {
         stopCamera()
         imageReader.close()
-        // Other cleanup tasks related to camera
+        // Tugas pembersihan lainnya terkait kamera
     }
 }

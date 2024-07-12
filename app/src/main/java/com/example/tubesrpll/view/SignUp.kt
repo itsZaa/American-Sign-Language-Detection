@@ -21,11 +21,14 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class SignUp : AppCompatActivity() {
 
+    // Inisialisasi variabel untuk elemen UI
     private lateinit var nameEt: EditText
     private lateinit var emailEt: EditText
     private lateinit var phoneEt: EditText
     private lateinit var passEt: EditText
     private lateinit var signUpButton: Button
+
+    // Inisialisasi FirebaseAuth dan Firestore
     private lateinit var firebaseAuth: FirebaseAuth
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
@@ -33,28 +36,37 @@ class SignUp : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up)
 
+        // Menghubungkan variabel dengan elemen UI
         nameEt = findViewById(R.id.textInputEditNama)
         emailEt = findViewById(R.id.textInputEditEmail)
         phoneEt = findViewById(R.id.textInputEditPhone)
         passEt = findViewById(R.id.editTextPassword2)
         signUpButton = findViewById(R.id.buttonSignup)
 
+        // Mendapatkan instance FirebaseAuth
         firebaseAuth = FirebaseAuth.getInstance()
 
+        // Set onClickListener untuk tombol daftar
         signUpButton.setOnClickListener {
+            // Mendapatkan teks dari EditText
             val name = nameEt.text.toString()
             val email = emailEt.text.toString()
             val phone = phoneEt.text.toString()
             val pass = passEt.text.toString()
 
+            // Validasi input
             if (name.isNotEmpty() && email.isNotEmpty() && phone.isNotEmpty() && pass.isNotEmpty()) {
                 if (pass.length >= 8) {
+                    // Membuat pengguna baru dengan email dan password
                     firebaseAuth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener { task ->
                         if (task.isSuccessful) {
+                            // Mendapatkan pengguna yang baru terdaftar
                             val user = firebaseAuth.currentUser
                             user?.let {
                                 val userId = it.uid
+                                // Membuat objek pengguna baru
                                 val newUser = User(id = userId, name = name, phone = phone, role = "user")
+                                // Menyimpan data pengguna baru di Firestore
                                 firestore.collection("users").document(userId).set(newUser)
                                     .addOnSuccessListener {
                                         Toast.makeText(this, "Register Success, check email untuk LOGIN", Toast.LENGTH_SHORT).show()
@@ -67,6 +79,7 @@ class SignUp : AppCompatActivity() {
                                     }
                             }
                         } else {
+                            // Menangani kasus error saat pendaftaran
                             if (task.exception is FirebaseAuthUserCollisionException) {
                                 NotificationDialog.showDialog(this, "Email sudah digunakan", "Silakan gunakan email lain")
                             } else {
@@ -82,10 +95,12 @@ class SignUp : AppCompatActivity() {
             }
         }
 
+        // Inisialisasi TextView untuk teks "Already have accounts? Sign in"
         val textView = findViewById<TextView>(R.id.signin)
         val text = "Already have accounts? Sign in"
         val spannableString = SpannableString(text)
 
+        // Membuat teks "Sign in" dapat diklik
         val clickableSpan = object : ClickableSpan() {
             override fun onClick(widget: View) {
                 val intent = Intent(this@SignUp, SignIn::class.java)
@@ -98,6 +113,7 @@ class SignUp : AppCompatActivity() {
         textView.movementMethod = android.text.method.LinkMovementMethod.getInstance()
     }
 
+    // Fungsi untuk mengirim email verifikasi
     private fun sendEmailVerification(user: FirebaseUser) {
         user.sendEmailVerification().addOnCompleteListener { task ->
             if (task.isSuccessful) {

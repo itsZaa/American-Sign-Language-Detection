@@ -66,6 +66,7 @@ class TranslateVideoASLToText : AppCompatActivity() {
 
         Log.d("Lifecycle", "onCreate called")
 
+        // Memeriksa izin kamera, jika tidak diberikan, maka minta izin kamera
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
                 this,
@@ -77,6 +78,7 @@ class TranslateVideoASLToText : AppCompatActivity() {
         }
     }
 
+    // Menangani hasil permintaan izin
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PackageManager.PERMISSION_GRANTED && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -86,23 +88,26 @@ class TranslateVideoASLToText : AppCompatActivity() {
         }
     }
 
+    // Inisialisasi komponen yang dibutuhkan
     private fun initializeComponents() {
         Log.d("Lifecycle", "Initializing components")
         textureView = findViewById(R.id.textureView)
         textViewResult = findViewById(R.id.textViewResult)
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
-        // Load your TFLite model
+        // Memuat model TFLite
         tflite = Interpreter(loadModelFile("ASL_model.tflite"))
         Log.d("ModelLoading", "Model successfully loaded")
 
-        // Load labels
+        // Memuat label
         labels = loadLabels()
         Log.d("ModelLoading", "Labels successfully loaded")
 
+        // Memulai kamera
         startCamera()
     }
 
+    // Memuat model TFLite dari file
     private fun loadModelFile(modelFilename: String): MappedByteBuffer {
         val fileDescriptor = assets.openFd(modelFilename)
         val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
@@ -112,6 +117,7 @@ class TranslateVideoASLToText : AppCompatActivity() {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
 
+    // Memuat label dari file
     private fun loadLabels(): List<String> {
         val labels = mutableListOf<String>()
         try {
@@ -124,6 +130,7 @@ class TranslateVideoASLToText : AppCompatActivity() {
         return labels
     }
 
+    // Callback untuk status kamera
     private val stateCallback = object : CameraDevice.StateCallback() {
         @RequiresApi(Build.VERSION_CODES.P)
         override fun onOpened(cameraDevice: CameraDevice) {
@@ -144,6 +151,7 @@ class TranslateVideoASLToText : AppCompatActivity() {
         }
     }
 
+    // Memulai sesi kamera
     @RequiresApi(Build.VERSION_CODES.P)
     private fun startCameraSession() {
         Log.d("CameraSession", "Starting camera session")
@@ -154,7 +162,7 @@ class TranslateVideoASLToText : AppCompatActivity() {
         }
         val surface = Surface(surfaceTexture)
 
-        // Initialize ImageReader
+        // Inisialisasi ImageReader
         imageReader = ImageReader.newInstance(640, 480, ImageFormat.YUV_420_888, 2)
         imageReader.setOnImageAvailableListener(onImageAvailableListener, null)
         val imageReaderSurface = imageReader.surface
@@ -180,7 +188,7 @@ class TranslateVideoASLToText : AppCompatActivity() {
                         captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_MODE_AUTO)
                         try {
                             myCameraCaptureSession?.setRepeatingRequest(captureRequestBuilder.build(), null, null)
-                            startFrameProcessing() // Start processing frames
+                            startFrameProcessing() // Mulai memproses frame
                         } catch (e: CameraAccessException) {
                             throw RuntimeException(e)
                         }
@@ -198,6 +206,7 @@ class TranslateVideoASLToText : AppCompatActivity() {
         }
     }
 
+    // Memulai kamera
     private fun startCamera() {
         try {
             Log.d("Camera", "Starting camera")
@@ -226,30 +235,32 @@ class TranslateVideoASLToText : AppCompatActivity() {
         }
     }
 
+    // Memulai pemrosesan frame
     private fun startFrameProcessing() {
         Log.d("FrameProcessing", "Starting frame processing")
         scheduler = Executors.newScheduledThreadPool(1)
         scheduler.scheduleAtFixedRate({
-            // Frame processing is handled by ImageReader.OnImageAvailableListener
-        }, 0, 100, TimeUnit.MILLISECONDS) // Adjust the interval as needed
+            // Pemrosesan frame ditangani oleh ImageReader.OnImageAvailableListener
+        }, 0, 100, TimeUnit.MILLISECONDS) // Sesuaikan interval sesuai kebutuhan
     }
 
+    // Listener untuk ketersediaan gambar
     private val onImageAvailableListener = ImageReader.OnImageAvailableListener { reader ->
         val image = reader.acquireLatestImage() ?: return@OnImageAvailableListener
         Log.d("FrameProcessing", "Image captured")
         val inputBuffer = convertImageToByteBuffer(image)
         image.close()
 
-        // Allocate output buffer according to the model output size
+        // Alokasi buffer output sesuai dengan ukuran output model
         val outputBuffer = ByteBuffer.allocateDirect(4 * 80 * 80) // Ukuran output sesuai dengan model
         outputBuffer.order(ByteOrder.nativeOrder())
 
         try {
-            // Run the model
+            // Menjalankan model
             tflite.run(inputBuffer, outputBuffer)
             Log.d("FrameProcessing", "Model run completed successfully")
 
-            // Parse the output and update the TextView
+            // Memparsing output dan memperbarui TextView
             outputBuffer.rewind()
             val resultIndex = outputBuffer.asFloatBuffer().let { buffer ->
                 var maxProb = -Float.MAX_VALUE
@@ -274,7 +285,7 @@ class TranslateVideoASLToText : AppCompatActivity() {
         }
     }
 
-
+    // Konversi gambar ke ByteBuffer
     private fun convertImageToByteBuffer(image: Image): ByteBuffer {
         val inputImageWidth = 50 // Lebar input model yang benar
         val inputImageHeight = 50 // Tinggi input model yang benar
@@ -301,7 +312,7 @@ class TranslateVideoASLToText : AppCompatActivity() {
                 val u = yuvBytes[ySize + (pixel / 2)].toInt() and 0xFF
                 val v = yuvBytes[ySize + uSize + (pixel / 2)].toInt() and 0xFF
 
-                // Convert YUV to RGB
+                // Konversi YUV ke RGB
                 val r = y + (1.370705 * (v - 128)).toInt()
                 val g = y - (0.337633 * (u - 128)).toInt() - (0.698001 * (v - 128)).toInt()
                 val b = y + (1.732446 * (u - 128)).toInt()
@@ -316,8 +327,7 @@ class TranslateVideoASLToText : AppCompatActivity() {
         return inputBuffer
     }
 
-
-
+    // Mengganti kamera (depan/belakang)
     fun switchCamera(view: View) {
         isFrontCamera = !isFrontCamera
         myCameraCaptureSession?.close()
@@ -325,18 +335,11 @@ class TranslateVideoASLToText : AppCompatActivity() {
         startCamera()
     }
 
+    // Menghentikan pemrosesan frame ketika aplikasi dijeda
     override fun onPause() {
         super.onPause()
         if (::scheduler.isInitialized) {
             scheduler.shutdown()
-        }
-    }
-
-    private fun stopCamera() {
-        try {
-            myCameraCaptureSession?.abortCaptures()
-        } catch (e: CameraAccessException) {
-            throw RuntimeException(e)
         }
     }
 }

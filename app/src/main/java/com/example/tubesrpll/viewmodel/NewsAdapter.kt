@@ -31,15 +31,17 @@ class NewsAdapter(private val newsList: List<NewsItem>) :
         val newsDate: TextView = itemView.findViewById(R.id.newsDate)
     }
 
+    // Membuat ViewHolder untuk setiap item dalam RecyclerView
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_news, parent, false)
         return NewsViewHolder(view)
     }
 
+    // Mengikat data ke ViewHolder pada posisi tertentu
     override fun onBindViewHolder(holder: NewsViewHolder, position: Int) {
         val newsItem = newsList[position]
 
-        // Load image from Firebase Storage using Picasso
+        // Memuat gambar dari Firebase Storage menggunakan Picasso
         if (newsItem.Image.isNotEmpty()) {
             val storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(newsItem.Image)
             storageReference.downloadUrl.addOnSuccessListener { uri ->
@@ -77,18 +79,19 @@ class NewsAdapter(private val newsList: List<NewsItem>) :
         holder.newsDescription.text = spannableContent
         holder.newsDescription.movementMethod = LinkMovementMethod.getInstance()
 
-        // Format timestamp to display in a readable format
+        // Format timestamp untuk ditampilkan dalam format yang mudah dibaca
         val formattedDate = newsItem.Timestamp?.let {
             SimpleDateFormat("dd MMMM yyyy", Locale("id", "ID")).format(it.toDate())
-        } ?: "Invalid timestamp"
+        } ?: "Waktu tidak valid"
         holder.newsDate.text = formattedDate
     }
 
+    // Mengembalikan jumlah total item dalam RecyclerView
     override fun getItemCount(): Int {
         return newsList.size
     }
 
-    // Helper function to extract first two sentences
+    // Fungsi bantuan untuk mengekstrak dua kalimat pertama dari konten berita
     private fun getFirstTwoSentences(content: String): String {
         val sentences = content.split(". ")
         return if (sentences.size >= 1) {

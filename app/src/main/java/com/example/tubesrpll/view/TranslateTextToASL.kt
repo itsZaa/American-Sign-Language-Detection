@@ -22,6 +22,7 @@ import com.squareup.picasso.Picasso
 
 class TranslateTextToASL : AppCompatActivity() {
 
+    // Inisialisasi variabel untuk Firebase Storage, Adapter dan elemen UI
     private lateinit var storageReference: StorageReference
     private lateinit var aslImageAdapter: ASLImageAdapter
     private lateinit var profileImageView: ImageView
@@ -31,16 +32,20 @@ class TranslateTextToASL : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_translate_text_to_asl)
 
+        // Mendapatkan referensi Firebase Storage
         storageReference = FirebaseStorage.getInstance().reference
 
+        // Menghubungkan variabel dengan elemen UI
         val textASL = findViewById<EditText>(R.id.textInputEditTextASL)
         val buttonASL = findViewById<Button>(R.id.buttonResultASL)
         val recyclerViewASL = findViewById<RecyclerView>(R.id.recyclerViewASL)
 
+        // Inisialisasi adapter dan layout manager untuk RecyclerView
         aslImageAdapter = ASLImageAdapter(this)
         recyclerViewASL.layoutManager = LinearLayoutManager(this)
         recyclerViewASL.adapter = aslImageAdapter
 
+        // Menambahkan TextWatcher untuk membatasi input teks hingga 50 karakter
         textASL.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
@@ -54,6 +59,7 @@ class TranslateTextToASL : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {}
         })
 
+        // Menambahkan onClickListener untuk tombol translate
         buttonASL.setOnClickListener {
             val inputText = textASL.text.toString()
             if (inputText.isNotEmpty()) {
@@ -61,6 +67,7 @@ class TranslateTextToASL : AppCompatActivity() {
             }
         }
 
+        // Menghubungkan variabel dengan elemen UI lainnya
         textViewASL = findViewById(R.id.textView)
         profileImageView = findViewById(R.id.imageProfileASL)
         fetchProfileImage()
@@ -71,6 +78,7 @@ class TranslateTextToASL : AppCompatActivity() {
         fetchProfileImage()
     }
 
+    // Fungsi untuk mengambil dan menampilkan gambar profil dari Firestore
     private fun fetchProfileImage() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
@@ -106,6 +114,7 @@ class TranslateTextToASL : AppCompatActivity() {
         }
     }
 
+    // Fungsi untuk memperbarui gambar ASL berdasarkan input teks
     private fun updateASLImages(text: String) {
         val imageList = mutableListOf<List<StorageReference>>()
         val lines = text.split(" ")
@@ -123,4 +132,3 @@ class TranslateTextToASL : AppCompatActivity() {
         aslImageAdapter.updateImageList(imageList)
     }
 }
-
